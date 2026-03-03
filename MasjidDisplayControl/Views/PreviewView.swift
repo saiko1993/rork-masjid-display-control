@@ -447,7 +447,7 @@ struct PreviewView: View {
                                 .font(.caption.weight(.semibold))
                         }
                         .buttonStyle(.borderedProminent)
-                        .tint(.cyan)
+                        .tint(DSTokens.Palette.accent)
                         .controlSize(.small)
                     }
                     .padding(DS.Spacing.sm)

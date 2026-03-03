@@ -27,14 +27,14 @@ struct DiagnosticsView: View {
             .padding(.vertical, DS.Spacing.sm)
             .padding(.bottom, DS.Spacing.xxl)
         }
-        .background(DepthStack(accentColor: .indigo) { Color.clear })
+        .background(DepthStack(accentColor: DSTokens.Palette.deepBlue) { Color.clear })
         .navigationTitle("API Diagnostics")
         .navigationBarTitleDisplayMode(.inline)
     }
 
     private var serverInfoCard: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.sm) {
-            SectionHeader(title: "Server Info", icon: "server.rack", color: .blue)
+            SectionHeader(title: "Server Info", icon: "server.rack", color: DSTokens.Palette.deepBlue)
 
             VStack(spacing: DS.Spacing.xs) {
                 infoRow("Base URL", value: store.pushTarget.baseUrl)
@@ -45,13 +45,13 @@ struct DiagnosticsView: View {
             }
         }
         .padding(DS.Spacing.md)
-        .glassLayer(.card, glow: .blue)
+        .glassLayer(.card, glow: DSTokens.Palette.deepBlue.opacity(0.3))
         .elevation(.level2)
     }
 
     private var connectionHealthCard: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.sm) {
-            SectionHeader(title: "Connection Health", icon: "heart.text.square", color: .pink)
+            SectionHeader(title: "Connection Health", icon: "heart.text.square", color: DSTokens.Palette.warmAmber)
 
             VStack(spacing: DS.Spacing.xs) {
                 infoRow("Auto-Sync", value: connectionManager.isAutoSyncEnabled ? "Enabled" : "Disabled")
@@ -81,7 +81,7 @@ struct DiagnosticsView: View {
             }
         }
         .padding(DS.Spacing.md)
-        .glassLayer(.card, glow: .pink)
+        .glassLayer(.card, glow: DSTokens.Palette.warmAmber.opacity(0.3))
         .elevation(.level2)
     }
 
@@ -105,7 +105,7 @@ struct DiagnosticsView: View {
             .frame(height: 56)
         }
         .buttonStyle(.borderedProminent)
-        .tint(.cyan)
+        .tint(DSTokens.Palette.accent)
         .disabled(isRunning)
         .sensoryFeedback(.impact(flexibility: .soft), trigger: hasRun)
     }
@@ -208,7 +208,7 @@ struct DiagnosticsView: View {
             }
         }
         .padding(DS.Spacing.md)
-        .glassLayer(.card, glow: .green)
+        .glassLayer(.card, glow: DSTokens.Palette.accent.opacity(0.3))
         .elevation(.level2)
     }
 
@@ -231,7 +231,7 @@ struct DiagnosticsView: View {
             .frame(height: 50)
         }
         .buttonStyle(.bordered)
-        .tint(copiedReport ? .green : .cyan)
+        .tint(copiedReport ? .green : DSTokens.Palette.accent)
         .sensoryFeedback(.success, trigger: copiedReport)
     }
 

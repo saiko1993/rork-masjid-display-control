@@ -9,7 +9,7 @@ struct SettingsView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: DS.Spacing.md) {
+            VStack(spacing: DSTokens.Grid.sectionSpacing) {
                 StatusOrnamentBar(
                     connectionManager: connectionManager,
                     networkMonitor: nil,
@@ -40,7 +40,7 @@ struct SettingsView: View {
             .padding(.vertical, DS.Spacing.sm)
             .padding(.bottom, DS.Spacing.xxl)
         }
-        .background(DepthStack(accentColor: .cyan, showGlow: false) { Color.clear })
+        .background(DepthStack(accentColor: DSTokens.Palette.accent, showGlow: false) { Color.clear })
         .navigationTitle("Settings")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -79,7 +79,7 @@ struct SettingsView: View {
     }
 
     private var profileSection: some View {
-        DSSection("Profile", icon: "person.crop.circle.fill", color: .mint) {
+        DSSection("Profile", icon: "person.crop.circle.fill", color: DSTokens.Palette.deepBlue) {
             VStack(spacing: DS.Spacing.sm) {
                 HStack {
                     Text("Active Profile").font(.subheadline)
@@ -99,7 +99,7 @@ struct SettingsView: View {
     }
 
     private var timeFormatSection: some View {
-        DSSection("Time Format", icon: "clock.fill", color: .cyan) {
+        DSSection("Time Format", icon: "clock.fill", color: DSTokens.Palette.accent) {
             VStack(spacing: DS.Spacing.sm) {
                 HStack {
                     Text("Display Format")
@@ -121,7 +121,7 @@ struct SettingsView: View {
     }
 
     private var locationSection: some View {
-        DSSection("Location", icon: "location.fill", color: .blue) {
+        DSSection("Location", icon: "location.fill", color: DSTokens.Palette.deepBlue) {
             VStack(spacing: DS.Spacing.sm) {
                 HStack {
                     Text("City").font(.subheadline)
@@ -148,7 +148,7 @@ struct SettingsView: View {
     }
 
     private var calculationSection: some View {
-        DSSection("Calculation", icon: "function", color: .purple) {
+        DSSection("Calculation", icon: "function", color: DSTokens.Palette.softSlate) {
             VStack(spacing: DS.Spacing.sm) {
                 HStack {
                     Text("Method").font(.subheadline)
@@ -175,10 +175,10 @@ struct SettingsView: View {
     }
 
     private var iqamaSection: some View {
-        DSSection("Iqama", icon: "bell.fill", color: .orange) {
+        DSSection("Iqama", icon: "bell.fill", color: DSTokens.Palette.warmAmber) {
             VStack(spacing: DS.Spacing.sm) {
                 Toggle("Enable Iqama", isOn: $store.iqama.enabled)
-                    .font(.subheadline).tint(.orange)
+                    .font(.subheadline).tint(DSTokens.Palette.warmAmber)
                 if store.iqama.enabled {
                     HStack {
                         Text("Iqama Mode").font(.subheadline)
@@ -286,10 +286,10 @@ struct SettingsView: View {
     }
 
     private var tickerSection: some View {
-        DSSection("Ticker / Messages", icon: "text.line.first.and.arrowtriangle.forward", color: .teal) {
+        DSSection("Ticker / Messages", icon: "text.line.first.and.arrowtriangle.forward", color: DSTokens.Palette.deepBlue) {
             VStack(spacing: DS.Spacing.sm) {
                 Toggle("Show Ticker", isOn: $store.display.showDhikrTicker)
-                    .font(.subheadline).tint(.teal)
+                    .font(.subheadline).tint(DSTokens.Palette.deepBlue)
 
                 if store.display.showDhikrTicker {
                     HStack {
@@ -327,7 +327,7 @@ struct SettingsView: View {
                                     .frame(maxWidth: .infinity)
                             }
                             .buttonStyle(.borderedProminent)
-                            .tint(.teal)
+                            .tint(DSTokens.Palette.deepBlue)
                             .controlSize(.small)
                             .disabled(store.ticker.customMessage.isEmpty)
                         }
@@ -352,7 +352,7 @@ struct SettingsView: View {
                         .font(.subheadline)
 
                     Toggle("Pause During Adhan/Iqama", isOn: $store.ticker.pauseDuringAdhan)
-                        .font(.subheadline).tint(.teal)
+                        .font(.subheadline).tint(DSTokens.Palette.deepBlue)
                 }
             }
         }
@@ -428,19 +428,19 @@ struct SettingsView: View {
                 ), in: -2...2)
                     .font(.subheadline)
                 Toggle("Show Gregorian", isOn: $store.dateDisplay.showGregorian)
-                    .font(.subheadline).tint(.cyan)
+                    .font(.subheadline).tint(DSTokens.Palette.accent)
                 Toggle("Show Hijri", isOn: $store.dateDisplay.showHijri)
-                    .font(.subheadline).tint(.cyan)
+                    .font(.subheadline).tint(DSTokens.Palette.accent)
                 Toggle("Arabic Weekday", isOn: $store.dateDisplay.showWeekdayArabic)
-                    .font(.subheadline).tint(.cyan)
+                    .font(.subheadline).tint(DSTokens.Palette.accent)
                 Toggle("English Weekday", isOn: $store.dateDisplay.showWeekdayEnglish)
-                    .font(.subheadline).tint(.cyan)
+                    .font(.subheadline).tint(DSTokens.Palette.accent)
             }
         }
     }
 
     private var displaySection: some View {
-        DSSection("Display", icon: "tv.fill", color: .indigo) {
+        DSSection("Display", icon: "tv.fill", color: DSTokens.Palette.accent) {
             VStack(spacing: DS.Spacing.sm) {
                 HStack {
                     Text("Language").font(.subheadline)
@@ -466,10 +466,10 @@ struct SettingsView: View {
                 }
 
                 Toggle("Lock Layout", isOn: $store.display.lockLayout)
-                    .font(.subheadline).tint(.cyan)
+                    .font(.subheadline).tint(DSTokens.Palette.accent)
 
                 Toggle("Large Mode (Bigger Fonts)", isOn: $store.largeMode)
-                    .font(.subheadline).tint(.cyan)
+                    .font(.subheadline).tint(DSTokens.Palette.accent)
 
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
@@ -483,14 +483,14 @@ struct SettingsView: View {
                         get: { Double(store.display.brightness) },
                         set: { store.display.brightness = Int($0) }
                     ), in: 10...100, step: 5)
-                    .tint(.cyan)
+                    .tint(DSTokens.Palette.accent)
                 }
             }
         }
     }
 
     private var audioSection: some View {
-        DSSection("Audio & Adhan", icon: "speaker.wave.3.fill", color: .purple) {
+        DSSection("Audio & Adhan", icon: "speaker.wave.3.fill", color: DSTokens.Palette.softSlate) {
             VStack(spacing: DS.Spacing.sm) {
                 HStack {
                     Text("Adhan Mode").font(.subheadline)
@@ -515,7 +515,7 @@ struct SettingsView: View {
                         get: { Double(store.audio.globalVolume) },
                         set: { store.audio.globalVolume = Int($0) }
                     ), in: 0...100, step: 5)
-                    .tint(.purple)
+                    .tint(DSTokens.Palette.softSlate)
                 }
 
                 Stepper("Pre-Adhan Reminder: \(store.audio.preAdhanReminderMinutes) min", value: $store.audio.preAdhanReminderMinutes, in: 0...99)
@@ -555,10 +555,10 @@ struct SettingsView: View {
     }
 
     private var brightnessSection: some View {
-        DSSection("Brightness Schedule", icon: "sun.max.fill", color: .yellow) {
+        DSSection("Brightness Schedule", icon: "sun.max.fill", color: DSTokens.Palette.warmAmber) {
             VStack(spacing: DS.Spacing.sm) {
                 Toggle("Auto Brightness", isOn: $store.brightnessSchedule.enabled)
-                    .font(.subheadline).tint(.yellow)
+                    .font(.subheadline).tint(DSTokens.Palette.warmAmber)
                 if store.brightnessSchedule.enabled {
                     Stepper("Day: \(store.brightnessSchedule.dayBrightness)%", value: $store.brightnessSchedule.dayBrightness, in: 20...100, step: 10)
                         .font(.subheadline)
@@ -574,10 +574,10 @@ struct SettingsView: View {
     }
 
     private var powerSection: some View {
-        DSSection("Power & Screen", icon: "bolt.fill", color: .orange) {
+        DSSection("Power & Screen", icon: "bolt.fill", color: DSTokens.Palette.warmAmber) {
             VStack(spacing: DS.Spacing.sm) {
                 Toggle("Screen Off Schedule", isOn: $store.power.screenOffSchedule.enabled)
-                    .font(.subheadline).tint(.orange)
+                    .font(.subheadline).tint(DSTokens.Palette.warmAmber)
                 if store.power.screenOffSchedule.enabled {
                     Stepper("Off at: \(store.power.screenOffSchedule.fromHour):00", value: $store.power.screenOffSchedule.fromHour, in: 0...23)
                         .font(.subheadline)
@@ -591,7 +591,7 @@ struct SettingsView: View {
     }
 
     private var ramadanSection: some View {
-        DSSection("Ramadan / Isha Rules", icon: "moon.stars.fill", color: .yellow) {
+        DSSection("Ramadan / Isha Rules", icon: "moon.stars.fill", color: DSTokens.Palette.accent) {
             VStack(spacing: DS.Spacing.sm) {
                 HStack {
                     Text("Ramadan Status")
@@ -603,7 +603,7 @@ struct SettingsView: View {
                 }
 
                 Toggle("Auto-Detect Ramadan", isOn: $store.ramadanConfig.autoDetect)
-                    .font(.subheadline).tint(.yellow)
+                    .font(.subheadline).tint(DSTokens.Palette.accent)
 
                 HStack {
                     Text("Isha Mode").font(.subheadline)
@@ -638,10 +638,10 @@ struct SettingsView: View {
     }
 
     private var quranProgramSection: some View {
-        DSSection("Quran / Khatma Program", icon: "book.fill", color: .teal) {
+        DSSection("Quran / Khatma Program", icon: "book.fill", color: DSTokens.Palette.deepBlue) {
             VStack(spacing: DS.Spacing.sm) {
                 Toggle("Enable Quran Program", isOn: $store.quranProgram.enabled)
-                    .font(.subheadline).tint(.teal)
+                    .font(.subheadline).tint(DSTokens.Palette.deepBlue)
 
                 if store.quranProgram.enabled {
                     HStack {
@@ -704,7 +704,7 @@ struct SettingsView: View {
                             .font(.caption.weight(.medium))
                     }
                     .buttonStyle(.bordered)
-                    .tint(.teal)
+                    .tint(DSTokens.Palette.deepBlue)
                     .controlSize(.small)
                 }
             }
@@ -732,7 +732,7 @@ struct SettingsView: View {
     }
 
     private var advancedSection: some View {
-        DSSection("Advanced", icon: "gearshape.2.fill", color: .gray) {
+        DSSection("Advanced", icon: "gearshape.2.fill", color: DSTokens.Palette.softSlate) {
             VStack(spacing: DS.Spacing.sm) {
                 Stepper("Adhan Duration: \(store.advanced.adhanActiveSeconds)s", value: $store.advanced.adhanActiveSeconds, in: 30...300, step: 30)
                     .font(.subheadline)
@@ -761,7 +761,7 @@ struct SettingsView: View {
                 }
 
                 Toggle("Auto-Sync", isOn: $connectionManager.isAutoSyncEnabled)
-                    .font(.subheadline).tint(.cyan)
+                    .font(.subheadline).tint(DSTokens.Palette.accent)
                 Text("Automatically push changes when connected to the display")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
@@ -770,9 +770,9 @@ struct SettingsView: View {
     }
 
     private var dataSection: some View {
-        DSCard(glow: .cyan) {
+        DSCard(glow: DSTokens.Palette.accent.opacity(0.3)) {
             VStack(spacing: DS.Spacing.sm) {
-                SectionHeader(title: "Data", icon: "externaldrive.fill", color: .cyan)
+                SectionHeader(title: "Data", icon: "externaldrive.fill", color: DSTokens.Palette.accent)
 
                 Button {
                     exportConfig()
@@ -795,7 +795,7 @@ struct SettingsView: View {
                 } label: {
                     HStack(spacing: 8) {
                         Image(systemName: store.saveConfirmation ? "checkmark.circle.fill" : "square.and.arrow.down.fill")
-                            .foregroundStyle(store.saveConfirmation ? .green : .cyan)
+                            .foregroundStyle(store.saveConfirmation ? .green : DSTokens.Palette.accent)
                         Text(store.saveConfirmation ? "Saved!" : "Save All Settings")
                             .font(.headline)
                             .foregroundStyle(store.saveConfirmation ? .green : .primary)
@@ -804,7 +804,7 @@ struct SettingsView: View {
                     .padding(.vertical, DS.Spacing.sm)
                     .background(
                         LinearGradient(
-                            colors: store.saveConfirmation ? [.green.opacity(0.15), .green.opacity(0.05)] : [.cyan.opacity(0.15), .cyan.opacity(0.05)],
+                            colors: store.saveConfirmation ? [.green.opacity(0.12), .green.opacity(0.04)] : [DSTokens.Palette.accent.opacity(0.12), DSTokens.Palette.accent.opacity(0.04)],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -857,7 +857,7 @@ struct SettingsView: View {
                 } label: {
                     Image(systemName: "plus.circle.fill")
                         .font(.title3)
-                        .foregroundStyle(.cyan)
+                        .foregroundStyle(DSTokens.Palette.accent)
                 }
                 .buttonStyle(.plain)
             }

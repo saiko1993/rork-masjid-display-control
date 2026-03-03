@@ -79,7 +79,7 @@ struct ContentView: View {
             }
         }
         .popupToasts(manager: toastManager)
-        .tint(.cyan)
+        .tint(DSTokens.Palette.accent)
         .preferredColorScheme(.dark)
         .onAppear {
             networkMonitor.start()

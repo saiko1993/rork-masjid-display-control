@@ -74,7 +74,7 @@ struct AboutView: View {
         HStack(spacing: DS.Spacing.sm) {
             Image(systemName: icon)
                 .font(.body)
-                .foregroundStyle(.blue)
+                .foregroundStyle(DSTokens.Palette.deepBlue)
                 .frame(width: 28)
 
             VStack(alignment: .leading, spacing: 2) {

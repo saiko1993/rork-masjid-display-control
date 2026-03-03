@@ -66,9 +66,9 @@ struct DepthStack<Content: View>: View {
     private var backgroundGradient: some View {
         LinearGradient(
             colors: [
-                Color(red: 0.05, green: 0.06, blue: 0.12),
-                Color(red: 0.04, green: 0.05, blue: 0.10),
-                Color(red: 0.03, green: 0.03, blue: 0.07)
+                DSTokens.Palette.backgroundMid,
+                DSTokens.Palette.backgroundDark,
+                Color(red: 0.03, green: 0.03, blue: 0.06)
             ],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
@@ -78,13 +78,13 @@ struct DepthStack<Content: View>: View {
     private var glowOverlays: some View {
         ZStack {
             RadialGradient(
-                colors: [accentColor.opacity(0.04), .clear],
+                colors: [accentColor.opacity(0.025), .clear],
                 center: .topTrailing,
                 startRadius: 0,
                 endRadius: 500
             )
             RadialGradient(
-                colors: [accentColor.opacity(0.02), .clear],
+                colors: [accentColor.opacity(0.015), .clear],
                 center: .bottomLeading,
                 startRadius: 0,
                 endRadius: 400
@@ -94,7 +94,7 @@ struct DepthStack<Content: View>: View {
 
     private var vignetteLayer: some View {
         RadialGradient(
-            colors: [.clear, .black.opacity(0.12)],
+            colors: [.clear, .black.opacity(0.10)],
             center: .center,
             startRadius: 200,
             endRadius: 600
@@ -103,7 +103,7 @@ struct DepthStack<Content: View>: View {
 
     private func phaseGlowOverlay(_ color: Color) -> some View {
         LinearGradient(
-            colors: [color.opacity(0.05), .clear, .clear, color.opacity(0.02)],
+            colors: [color.opacity(0.03), .clear, .clear, color.opacity(0.015)],
             startPoint: .top,
             endPoint: .bottom
         )

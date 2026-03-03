@@ -160,7 +160,7 @@ struct PushView: View {
                 DSActionTileButton(
                     icon: "arrow.triangle.2.circlepath",
                     title: isSendingSync ? "Syncing..." : "Light Sync",
-                    tint: .cyan,
+                    tint: DSTokens.Palette.deepBlue,
                     isLoading: isSendingSync,
                     isDisabled: connectionManager.connectionState != .connected
                 ) {
@@ -260,7 +260,7 @@ struct PushView: View {
                             .foregroundStyle(.secondary)
                         Text(d, style: .relative)
                             .font(.caption2)
-                            .foregroundStyle(.cyan)
+                            .foregroundStyle(DSTokens.Palette.deepBlue)
                     }
                 }
             }
@@ -426,7 +426,7 @@ struct PushView: View {
                 }
             }
             .padding(DS.Spacing.md)
-            .glassLayer(.card, glow: .indigo)
+            .glassLayer(.card, glow: DSTokens.Palette.accent.opacity(0.3))
             .elevation(.level2)
             .staggerAppear(visible: appearAnimation, index: 4)
         }
@@ -515,7 +515,7 @@ struct PushView: View {
 
     private var wifiConfigSection: some View {
         VStack(alignment: .leading, spacing: DS.Spacing.sm) {
-            SectionHeader(title: "WiFi Connection", icon: "wifi", color: .cyan)
+            SectionHeader(title: "WiFi Connection", icon: "wifi", color: DSTokens.Palette.deepBlue)
 
             VStack(spacing: DS.Spacing.sm) {
                 VStack(alignment: .leading, spacing: 6) {
@@ -563,7 +563,7 @@ struct PushView: View {
             }
         }
         .padding(DS.Spacing.md)
-        .glassLayer(.card, glow: .cyan)
+        .glassLayer(.card, glow: DSTokens.Palette.deepBlue.opacity(0.3))
         .elevation(.level2)
         .staggerAppear(visible: appearAnimation, index: 5)
     }

@@ -38,7 +38,7 @@ struct StatusOrnamentBar: View {
 
     private var networkColor: Color {
         guard let nm = networkMonitor else { return .red }
-        return nm.isConnected ? .cyan : .red
+        return nm.isConnected ? DSTokens.Palette.deepBlue : .red
     }
 
     private var isSpinning: Bool {
@@ -93,8 +93,8 @@ struct StatusOrnamentBar: View {
         }
         .frame(height: 56)
         .padding(.horizontal, DS.Spacing.md)
-        .glassLayer(.ornament, glow: dotColor)
-        .elevation(.level2)
+        .glassLayer(.ornament, glow: dotColor.opacity(0.5))
+        .elevation(.level1)
     }
 
     private func chipView(icon: String, color: Color, spinning: Bool = false) -> some View {

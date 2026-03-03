@@ -8,7 +8,7 @@ struct DSActionTileButton: View {
     let icon: String
     let title: String
     var subtitle: String = ""
-    var tint: Color = .cyan
+    var tint: Color = DSTokens.Palette.accent
     var isLoading: Bool = false
     var isDisabled: Bool = false
     var height: CGFloat = DSTokens.ButtonSize.tileHeight
@@ -48,7 +48,7 @@ struct DSActionTileButton: View {
                 ZStack {
                     VisualEffectBlurView(blurStyle: .systemThinMaterialDark)
                     LinearGradient(
-                        colors: [tint.opacity(isDisabled ? 0.02 : 0.08), .clear],
+                        colors: [tint.opacity(isDisabled ? 0.02 : 0.06), .clear],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -59,14 +59,14 @@ struct DSActionTileButton: View {
                 RoundedRectangle(cornerRadius: DS.Radius.xl, style: .continuous)
                     .strokeBorder(
                         LinearGradient(
-                            colors: [tint.opacity(isDisabled ? 0.06 : 0.2), tint.opacity(0.04)],
+                            colors: [tint.opacity(isDisabled ? 0.04 : 0.15), tint.opacity(0.03)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
                         lineWidth: 0.5
                     )
             )
-            .elevation(.level2)
+            .elevation(.level1)
         }
         .buttonStyle(PressEffectStyle())
         .disabled(isDisabled || isLoading)

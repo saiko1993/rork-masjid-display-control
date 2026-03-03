@@ -17,7 +17,7 @@ struct HomeView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: DS.Spacing.lg) {
+            VStack(spacing: DSTokens.Grid.sectionSpacing) {
                 heroSection
                     .staggerAppear(visible: appearAnim, index: 0)
 
@@ -122,7 +122,7 @@ struct HomeView: View {
                     .clipShape(.capsule)
             }
         }
-        .frame(height: 150)
+        .frame(height: DSTokens.CardSize.largeHeight)
         .clipShape(.rect(cornerRadius: DS.Radius.xxl, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: DS.Radius.xxl, style: .continuous)
@@ -177,19 +177,19 @@ struct HomeView: View {
                     if state.phase == .normal && state.countdownSeconds > 0 {
                         Text(formatCountdown(state.countdownSeconds))
                             .font(.system(.title2, design: .monospaced, weight: .bold))
-                            .vibrancyText(isActive: true, color: .cyan)
+                            .vibrancyText(isActive: true, color: DSTokens.Palette.deepBlue)
                             .monospacedDigit()
                             .contentTransition(.numericText())
                             .animation(.default, value: state.countdownSeconds)
                     } else if state.phase == .adhanActive {
                         Text(formatCountdown(state.adhanRemainingSeconds))
                             .font(.system(.title3, design: .monospaced, weight: .bold))
-                            .vibrancyText(isActive: true, color: .orange)
+                            .vibrancyText(isActive: true, color: DSTokens.Palette.warmAmber)
                             .monospacedDigit()
                     } else if state.phase == .iqamaCountdown {
                         Text(formatCountdown(state.iqamaCountdownSeconds))
                             .font(.system(.title3, design: .monospaced, weight: .bold))
-                            .vibrancyText(isActive: true, color: .purple)
+                            .vibrancyText(isActive: true, color: DSTokens.Palette.accent)
                             .monospacedDigit()
                     }
                 }
@@ -205,11 +205,11 @@ struct HomeView: View {
 
     private var quickChipsRow: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: DS.Spacing.xs) {
-                StatusChip(store.location.cityName, color: .blue, icon: "location.fill")
-                StatusChip(store.currentTheme.nameEn, color: .orange, icon: "paintpalette.fill")
-                StatusChip(store.display.layout.displayName, color: .indigo, icon: "rectangle.split.2x1")
-                StatusChip("\(store.display.brightness)%", color: .yellow, icon: "sun.max.fill")
+            HStack(spacing: DSTokens.Grid.chipSpacing) {
+                StatusChip(store.location.cityName, color: DSTokens.Palette.deepBlue, icon: "location.fill")
+                StatusChip(store.currentTheme.nameEn, color: DSTokens.Palette.accent, icon: "paintpalette.fill")
+                StatusChip(store.display.layout.displayName, color: DSTokens.Palette.softSlate, icon: "rectangle.split.2x1")
+                StatusChip("\(store.display.brightness)%", color: DSTokens.Palette.warmAmber, icon: "sun.max.fill")
                 if store.advanced.scheduleMode == "simulated" {
                     StatusChip("SIM", color: .orange, icon: "clock.badge.questionmark")
                 }
@@ -248,7 +248,7 @@ struct HomeView: View {
                 DSActionTileButton(
                     icon: "arrow.triangle.2.circlepath",
                     title: isSendingSync ? "Syncing..." : "Light Sync",
-                    tint: .cyan,
+                    tint: DSTokens.Palette.deepBlue,
                     isLoading: isSendingSync,
                     isDisabled: cm.connectionState != .connected
                 ) {
@@ -268,7 +268,7 @@ struct HomeView: View {
                 DSActionTileButton(
                     icon: store.saveConfirmation ? "checkmark.circle.fill" : "square.and.arrow.down.fill",
                     title: store.saveConfirmation ? "Saved!" : "Save All",
-                    tint: store.saveConfirmation ? .green : .cyan
+                    tint: store.saveConfirmation ? .green : DSTokens.Palette.accent
                 ) {
                     store.save()
                     cm.scheduleLightSync(store: store, bleManager: bm)
@@ -349,24 +349,24 @@ struct HomeView: View {
     }
 
     private var quickActionsGrid: some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DS.Spacing.sm) {
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DSTokens.Grid.cardSpacing) {
             NavigationLink(value: AppRoute.setup) {
-                ActionTileView(icon: "wand.and.stars", title: "Setup", subtitle: "Wizard", color: .purple)
+                ActionTileView(icon: "wand.and.stars", title: "Setup", subtitle: "Wizard", color: DSTokens.Palette.accent)
             }
             .buttonStyle(PressEffectStyle())
 
             NavigationLink(value: AppRoute.facePicker) {
-                ActionTileView(icon: "rectangle.grid.2x2.fill", title: "Face Studio", subtitle: "6 faces", color: .purple)
+                ActionTileView(icon: "rectangle.grid.2x2.fill", title: "Face Studio", subtitle: "6 faces", color: DSTokens.Palette.deepBlue)
             }
             .buttonStyle(PressEffectStyle())
 
             NavigationLink(value: AppRoute.themes) {
-                ActionTileView(icon: "paintpalette.fill", title: "Themes", subtitle: "\(ThemeId.allCases.count) themes", color: .orange)
+                ActionTileView(icon: "paintpalette.fill", title: "Themes", subtitle: "\(ThemeId.allCases.count) themes", color: DSTokens.Palette.warmAmber)
             }
             .buttonStyle(PressEffectStyle())
 
             NavigationLink(value: AppRoute.docs) {
-                ActionTileView(icon: "doc.text.fill", title: "Docs", subtitle: "PRD & Guide", color: .indigo)
+                ActionTileView(icon: "doc.text.fill", title: "Docs", subtitle: "PRD & Guide", color: DSTokens.Palette.softSlate)
             }
             .buttonStyle(PressEffectStyle())
 
@@ -404,9 +404,9 @@ struct HomeView: View {
 
     private func phaseColor(_ phase: PrayerPhase) -> Color {
         switch phase {
-        case .normal: return .cyan
-        case .adhanActive: return .orange
-        case .iqamaCountdown: return .purple
+        case .normal: return DSTokens.Palette.deepBlue
+        case .adhanActive: return DSTokens.Palette.warmAmber
+        case .iqamaCountdown: return DSTokens.Palette.accent
         case .prayerInProgress: return .green
         }
     }

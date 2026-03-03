@@ -8,7 +8,7 @@ enum DSButtonVariant {
 
     var tintColor: Color {
         switch self {
-        case .primary: return .cyan
+        case .primary: return DSTokens.Palette.accent
         case .secondary: return .white
         case .destructive: return .red
         case .ghost: return .secondary
@@ -87,13 +87,13 @@ private struct DSPrimaryButtonStyle: ButtonStyle {
             .foregroundStyle(.white)
             .background(
                 LinearGradient(
-                    colors: [.cyan, .blue],
+                    colors: [DSTokens.Palette.accent, DSTokens.Palette.deepBlue],
                     startPoint: .leading,
                     endPoint: .trailing
                 )
             )
             .clipShape(.rect(cornerRadius: DS.Radius.md, style: .continuous))
-            .shadow(color: .cyan.opacity(0.15), radius: 6, y: 3)
+            .shadow(color: DSTokens.Palette.accent.opacity(0.12), radius: 6, y: 3)
             .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
             .opacity(configuration.isPressed ? 0.9 : 1.0)
             .animation(DSAnimation.tapSpring, value: configuration.isPressed)

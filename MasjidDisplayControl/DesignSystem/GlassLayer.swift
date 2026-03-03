@@ -92,10 +92,10 @@ struct GlassLayerModifier: ViewModifier {
                     )
             )
             .shadow(
-                color: (glowColor ?? .clear).opacity(glowColor != nil ? 0.06 : 0),
-                radius: 12, y: 4
+                color: (glowColor ?? .clear).opacity(glowColor != nil ? 0.04 : 0),
+                radius: 8, y: 3
             )
-            .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+            .shadow(color: .black.opacity(0.12), radius: 6, y: 3)
     }
 
     @ViewBuilder

@@ -27,12 +27,12 @@ struct DSFloatingTabBar<Tab: Hashable>: View {
                         Text(item.title)
                             .font(.caption2.weight(selection == item.tab ? .semibold : .regular))
                     }
-                    .foregroundStyle(selection == item.tab ? .cyan : .secondary)
+                    .foregroundStyle(selection == item.tab ? DSTokens.Palette.accent : .secondary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, DS.Spacing.xs)
                     .background(
                         selection == item.tab
-                            ? AnyShapeStyle(.cyan.opacity(0.1))
+                            ? AnyShapeStyle(DSTokens.Palette.accent.opacity(0.08))
                             : AnyShapeStyle(.clear)
                     )
                     .clipShape(.rect(cornerRadius: DS.Radius.md))

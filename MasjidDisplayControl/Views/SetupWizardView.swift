@@ -35,7 +35,7 @@ struct SetupWizardView: View {
                     .fill(Color(.systemGray5))
                 Rectangle()
                     .fill(
-                        LinearGradient(colors: [.blue, .cyan], startPoint: .leading, endPoint: .trailing)
+                        LinearGradient(colors: [DSTokens.Palette.deepBlue, DSTokens.Palette.accent], startPoint: .leading, endPoint: .trailing)
                     )
                     .frame(width: geo.size.width * CGFloat(step) / CGFloat(totalSteps))
                     .animation(.spring, value: step)

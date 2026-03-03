@@ -38,9 +38,9 @@ struct PremiumBackground: View {
         ZStack {
             LinearGradient(
                 colors: [
-                    Color(red: 0.05, green: 0.06, blue: 0.12),
-                    Color(red: 0.04, green: 0.05, blue: 0.10),
-                    Color(red: 0.03, green: 0.03, blue: 0.07)
+                    DSTokens.Palette.backgroundMid,
+                    DSTokens.Palette.backgroundDark,
+                    Color(red: 0.03, green: 0.03, blue: 0.06)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -49,7 +49,7 @@ struct PremiumBackground: View {
 
             if showGlow {
                 RadialGradient(
-                    colors: [accentColor.opacity(0.07), .clear],
+                    colors: [accentColor.opacity(0.04), .clear],
                     center: .topTrailing,
                     startRadius: 0,
                     endRadius: 500
@@ -57,7 +57,7 @@ struct PremiumBackground: View {
                 .ignoresSafeArea()
 
                 RadialGradient(
-                    colors: [accentColor.opacity(0.04), .clear],
+                    colors: [accentColor.opacity(0.025), .clear],
                     center: .bottomLeading,
                     startRadius: 0,
                     endRadius: 400
