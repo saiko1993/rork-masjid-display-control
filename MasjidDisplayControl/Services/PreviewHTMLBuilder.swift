@@ -1,5 +1,6 @@
 import SwiftUI
 
+@MainActor
 struct PreviewHTMLBuilder {
     static func buildHTML(store: AppStore, now: Date) -> String {
         let theme = store.currentTheme
