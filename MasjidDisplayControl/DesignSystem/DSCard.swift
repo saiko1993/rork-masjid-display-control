@@ -48,7 +48,7 @@ struct DSSection<Content: View>: View {
     }
 
     var body: some View {
-        DSCard(glow: glow ?? iconColor.opacity(0.5)) {
+        DSCard(glow: glow ?? iconColor.opacity(0.3)) {
             VStack(alignment: .leading, spacing: DS.Spacing.sm) {
                 SectionHeader(title: title, icon: icon, color: iconColor)
                 content()

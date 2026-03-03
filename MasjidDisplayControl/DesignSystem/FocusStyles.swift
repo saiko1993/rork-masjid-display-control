@@ -11,10 +11,10 @@ struct FocusRingModifier: ViewModifier {
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .strokeBorder(
-                        color.opacity(isActive ? (glowPulse ? 0.5 : 0.2) : 0),
-                        lineWidth: isActive ? 1.5 : 0
+                        color.opacity(isActive ? (glowPulse ? 0.3 : 0.12) : 0),
+                        lineWidth: isActive ? 1 : 0
                     )
-                    .shadow(color: color.opacity(isActive ? 0.3 : 0), radius: 8)
+                    .shadow(color: color.opacity(isActive ? 0.15 : 0), radius: 6)
                     .animation(.easeInOut(duration: 1.4).repeatForever(autoreverses: true), value: glowPulse)
             )
             .scaleEffect(isActive ? 1.005 : 1.0)
@@ -31,7 +31,7 @@ struct VibrancyTextModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .foregroundStyle(isActive ? color : .primary)
-            .shadow(color: isActive ? color.opacity(0.4) : .clear, radius: 6)
+            .shadow(color: isActive ? color.opacity(0.25) : .clear, radius: 4)
     }
 }
 

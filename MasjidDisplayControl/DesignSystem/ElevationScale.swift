@@ -33,11 +33,11 @@ enum ElevationLevel: Int, CaseIterable {
     var shadowOpacity: Double {
         switch self {
         case .level0: return 0
-        case .level1: return 0.08
-        case .level2: return 0.14
-        case .level3: return 0.22
-        case .level4: return 0.3
-        case .level5: return 0.4
+        case .level1: return 0.06
+        case .level2: return 0.10
+        case .level3: return 0.16
+        case .level4: return 0.22
+        case .level5: return 0.28
         }
     }
 

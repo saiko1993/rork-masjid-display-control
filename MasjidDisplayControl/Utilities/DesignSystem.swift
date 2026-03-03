@@ -102,7 +102,7 @@ struct GlassPanelModifier: ViewModifier {
                         lineWidth: 0.5
                     )
             )
-            .shadow(color: .black.opacity(0.25), radius: 12, y: 6)
+            .shadow(color: .black.opacity(0.18), radius: 10, y: 5)
     }
 }
 
@@ -145,8 +145,8 @@ struct GlowGlassPanelModifier: ViewModifier {
                         lineWidth: 0.5
                     )
             )
-            .shadow(color: glowColor.opacity(0.15), radius: 16, y: 6)
-            .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
+            .shadow(color: glowColor.opacity(0.08), radius: 12, y: 4)
+            .shadow(color: .black.opacity(0.14), radius: 6, y: 3)
     }
 }
 
@@ -190,7 +190,7 @@ struct GlassCardModifier: ViewModifier {
                         lineWidth: 0.5
                     )
             )
-            .shadow(color: .black.opacity(0.25), radius: 12, y: 6)
+            .shadow(color: .black.opacity(0.18), radius: 10, y: 5)
     }
 }
 
@@ -234,8 +234,8 @@ struct GlowGlassModifier: ViewModifier {
                         lineWidth: 0.5
                     )
             )
-            .shadow(color: glowColor.opacity(0.12), radius: 16, y: 6)
-            .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
+            .shadow(color: glowColor.opacity(0.06), radius: 12, y: 4)
+            .shadow(color: .black.opacity(0.14), radius: 6, y: 3)
     }
 }
 

@@ -34,7 +34,7 @@ struct FocusPulseModifier: ViewModifier {
         content
             .overlay(
                 RoundedRectangle(cornerRadius: DS.Radius.xl, style: .continuous)
-                    .strokeBorder(color.opacity(isActive ? (pulse ? 0.4 : 0.15) : 0), lineWidth: 1.5)
+                    .strokeBorder(color.opacity(isActive ? (pulse ? 0.25 : 0.08) : 0), lineWidth: 1)
                     .animation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true), value: pulse)
             )
             .onAppear { pulse = isActive }

@@ -15,8 +15,9 @@ struct PreviewHTMLBuilder {
             prayerInProgressMinutes: store.advanced.prayerInProgressMinutes
         )
 
+        let is12h = store.timeFormat == .twelve
         let tf = DateFormatter()
-        tf.dateFormat = "HH:mm"
+        tf.dateFormat = is12h ? "h:mm" : "HH:mm"
 
         let bgColor = colorToCSS(theme.palette.background)
         let surfaceColor = colorToCSS(theme.palette.surface)
@@ -202,7 +203,7 @@ struct PreviewHTMLBuilder {
         <div class="vignette"></div>
         <div class="container">
             <div class="left-col">
-                <div class="clock" id="clock">\(tf.string(from: now))</div>
+                <div class="clock" id="clock">\(formatClockTime(now, is12h: is12h))</div>
                 <div class="date-block">
                     <div class="hijri">\(hijriHelper)</div>
                     <div>\(gregorianDate)</div>
@@ -240,12 +241,20 @@ struct PreviewHTMLBuilder {
             </span>
         </div>
         <script>
+        const use12h = \(is12h ? "true" : "false");
         function updateClock() {
             const now = new Date();
-            const h = String(now.getHours()).padStart(2, '0');
+            let h = now.getHours();
             const m = String(now.getMinutes()).padStart(2, '0');
             const s = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('clock').textContent = h + ':' + m + ':' + s;
+            let period = '';
+            if (use12h) {
+                period = h >= 12 ? ' PM' : ' AM';
+                h = h % 12 || 12;
+                document.getElementById('clock').textContent = h + ':' + m + ':' + s + period;
+            } else {
+                document.getElementById('clock').textContent = String(h).padStart(2, '0') + ':' + m + ':' + s;
+            }
         }
         setInterval(updateClock, 1000);
         updateClock();
@@ -260,6 +269,20 @@ struct PreviewHTMLBuilder {
         var r: CGFloat = 0; var g: CGFloat = 0; var b: CGFloat = 0; var a: CGFloat = 0
         resolved.getRed(&r, green: &g, blue: &b, alpha: &a)
         return String(format: "#%02X%02X%02X", Int(r * 255), Int(g * 255), Int(b * 255))
+    }
+
+    private static func formatClockTime(_ date: Date, is12h: Bool) -> String {
+        let comps = Calendar.current.dateComponents([.hour, .minute, .second], from: date)
+        let rawHour = comps.hour ?? 0
+        let m = String(format: "%02d", comps.minute ?? 0)
+        let s = String(format: "%02d", comps.second ?? 0)
+        if is12h {
+            let hour = rawHour == 0 ? 12 : (rawHour > 12 ? rawHour - 12 : rawHour)
+            let period = rawHour >= 12 ? "PM" : "AM"
+            return "\(hour):\(m):\(s) \(period)"
+        } else {
+            return String(format: "%02d:%@:%@", rawHour, m, s)
+        }
     }
 
     private static func formatCountdown(_ totalSeconds: Int) -> String {

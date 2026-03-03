@@ -71,9 +71,9 @@ struct HomeView: View {
 
             LinearGradient(
                 colors: [
-                    store.currentTheme.palette.accent.opacity(0.12),
+                    store.currentTheme.palette.accent.opacity(0.08),
                     .clear,
-                    store.currentTheme.palette.accent.opacity(0.04),
+                    store.currentTheme.palette.accent.opacity(0.03),
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -89,7 +89,7 @@ struct HomeView: View {
             .clipShape(.rect(cornerRadius: DS.Radius.xxl, style: .continuous))
 
             RadialGradient(
-                colors: [store.currentTheme.palette.accent.opacity(0.15), .clear],
+                colors: [store.currentTheme.palette.accent.opacity(0.08), .clear],
                 center: .top,
                 startRadius: 0,
                 endRadius: 180
@@ -135,8 +135,7 @@ struct HomeView: View {
                     lineWidth: 0.5
                 )
         )
-        .elevation(.level3, color: store.currentTheme.palette.accent)
-        .shimmer()
+        .elevation(.level2, color: store.currentTheme.palette.accent)
     }
 
     private var nextPrayerCard: some View {

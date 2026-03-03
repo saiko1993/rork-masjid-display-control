@@ -93,7 +93,7 @@ private struct DSPrimaryButtonStyle: ButtonStyle {
                 )
             )
             .clipShape(.rect(cornerRadius: DS.Radius.md, style: .continuous))
-            .shadow(color: .cyan.opacity(0.25), radius: 8, y: 4)
+            .shadow(color: .cyan.opacity(0.15), radius: 6, y: 3)
             .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
             .opacity(configuration.isPressed ? 0.9 : 1.0)
             .animation(DSAnimation.tapSpring, value: configuration.isPressed)
