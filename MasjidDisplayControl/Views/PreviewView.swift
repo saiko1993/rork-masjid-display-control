@@ -105,6 +105,9 @@ struct PreviewView: View {
                         HStack(spacing: 4) {
                             Image(systemName: mode.icon)
                             Text(mode.label)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                                .minimumScaleFactor(0.85)
                         }
                         .font(.caption.weight(.medium))
                         .padding(.horizontal, 10)
@@ -219,6 +222,7 @@ struct PreviewView: View {
             .padding(.horizontal, DS.Spacing.md)
             .padding(.vertical, DS.Spacing.xs)
         }
+        .frame(height: 56)
         .background(.black.opacity(0.85))
     }
 
@@ -278,9 +282,9 @@ struct PreviewView: View {
                             .tint(.cyan)
 
                             Button {
-                                withAnimation { previewMode = .localHTML }
+                                withAnimation { previewMode = .nativeRenderer }
                             } label: {
-                                Label("Use Local Preview", systemImage: "globe")
+                                Label("Use Native Renderer", systemImage: "tv")
                                     .font(.subheadline.weight(.medium))
                             }
                             .buttonStyle(.bordered)
@@ -437,7 +441,7 @@ struct PreviewView: View {
             checkingServer = false
 
             if !serverReachable && previewMode == .liveServer {
-                withAnimation { previewMode = .localHTML }
+                withAnimation { previewMode = .nativeRenderer }
             }
         }
     }
