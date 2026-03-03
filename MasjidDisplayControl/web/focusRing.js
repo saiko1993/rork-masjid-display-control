@@ -3,7 +3,6 @@
 
   var prevNextPrayer = null;
   var prevTickerText = '';
-  var lastTickTime = 0;
 
   function highlightNextPrayer() {
     var rows = document.querySelectorAll('.prayer-row, [data-prayer]');
@@ -63,9 +62,11 @@
     var text = ticker.textContent || '';
     if (text !== prevTickerText) {
       ticker.classList.add('ticker-focus', 'changing');
-      setTimeout(function () {
-        ticker.classList.remove('changing');
-      }, 500);
+      requestAnimationFrame(function () {
+        setTimeout(function () {
+          ticker.classList.remove('changing');
+        }, 500);
+      });
       prevTickerText = text;
     }
   }
@@ -77,21 +78,13 @@
     watchTicker();
   }
 
-  function loop(ts) {
-    if (ts - lastTickTime >= 1000) {
-      lastTickTime = ts;
-      tick();
-    }
-    requestAnimationFrame(loop);
-  }
-
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       tick();
-      requestAnimationFrame(loop);
+      setInterval(tick, 1000);
     });
   } else {
     tick();
-    requestAnimationFrame(loop);
+    setInterval(tick, 1000);
   }
 })();
