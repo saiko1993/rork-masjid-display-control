@@ -241,15 +241,22 @@ struct PreviewHTMLBuilder {
             </span>
         </div>
         <script>
-        function updateClock() {
-            const now = new Date();
-            const h = String(now.getHours()).padStart(2, '0');
-            const m = String(now.getMinutes()).padStart(2, '0');
-            const s = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('clock').textContent = h + ':' + m + ':' + s;
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
+        (function() {
+            var lastSecond = -1;
+            function updateClock(ts) {
+                var now = new Date();
+                var sec = now.getSeconds();
+                if (sec !== lastSecond) {
+                    lastSecond = sec;
+                    var h = String(now.getHours()).padStart(2, '0');
+                    var m = String(now.getMinutes()).padStart(2, '0');
+                    var s = String(now.getSeconds()).padStart(2, '0');
+                    document.getElementById('clock').textContent = h + ':' + m + ':' + s;
+                }
+                requestAnimationFrame(updateClock);
+            }
+            requestAnimationFrame(updateClock);
+        })();
         </script>
         </body>
         </html>

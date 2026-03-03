@@ -102,36 +102,40 @@ struct PushView: View {
             VStack(spacing: 4) {
                 Text(connectionStateTitle)
                     .font(.title3.weight(.bold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
 
                 Text(connectionStateSubtitle)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
             }
 
             HStack(spacing: DS.Spacing.sm) {
                 if let nm = networkMonitor {
                     statusPill(
-                        nm.isConnected ? nm.interfaceType : "Offline",
+                        nm.isConnected ? nm.interfaceType : "–",
                         icon: nm.isConnected ? "wifi" : "wifi.slash",
                         isActive: nm.isConnected,
                         color: nm.isConnected ? .cyan : .red
                     )
                 }
                 statusPill(
-                    "Server",
+                    connectionManager.connectionState == .connected ? "OK" : "–",
                     icon: connectionManager.connectionState == .connected ? "checkmark.circle.fill" : "xmark.circle",
                     isActive: connectionManager.connectionState == .connected,
                     color: connectionManager.connectionState == .connected ? .green : .secondary
                 )
                 if connectionManager.isPaired {
-                    statusPill("Paired", icon: "checkmark.seal.fill", isActive: true, color: .green)
+                    statusPill("", icon: "checkmark.seal.fill", isActive: true, color: .green)
                 }
                 if connectionManager.pendingCount > 0 {
-                    statusPill("Queue: \(connectionManager.pendingCount)", icon: "tray.full.fill", isActive: true, color: .orange)
+                    statusPill("\(min(connectionManager.pendingCount, 99))", icon: "tray.full.fill", isActive: true, color: .orange)
                 }
-                if let date = connectionManager.lastSyncDate {
-                    statusPill(date.formatted(.relative(presentation: .named)), icon: "clock", isActive: true, color: .blue)
+                if connectionManager.serverResponseTimeMs > 0 && connectionManager.connectionState == .connected {
+                    statusPill("\(connectionManager.serverResponseTimeMs)ms", icon: "bolt.fill", isActive: true, color: connectionManager.serverResponseTimeMs < 200 ? .green : .orange)
                 }
             }
         }
@@ -920,17 +924,23 @@ struct PushView: View {
     }
 
     private func statusPill(_ text: String, icon: String, isActive: Bool, color: Color) -> some View {
-        HStack(spacing: 4) {
+        HStack(spacing: text.isEmpty ? 0 : 4) {
             Image(systemName: icon)
                 .font(.caption2.weight(.bold))
-            Text(text)
-                .font(.caption2.weight(.semibold))
+            if !text.isEmpty {
+                Text(text)
+                    .font(.caption2.weight(.semibold))
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .minimumScaleFactor(0.85)
+            }
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
         .background(isActive ? color.opacity(0.15) : Color(.tertiarySystemGroupedBackground))
         .foregroundStyle(isActive ? color : .secondary)
         .clipShape(.capsule)
+        .frame(minWidth: 36)
     }
 
     private var connectionGradient: some ShapeStyle {

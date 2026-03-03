@@ -510,42 +510,35 @@ struct SettingsView: View {
     private var connectionStatusBar: some View {
         let isError = connectionManager.connectionState == .error
         DSCard(glow: syncStateColor) {
-            HStack(spacing: DS.Spacing.sm) {
-                Circle()
-                    .fill(syncStateColor)
-                    .frame(width: 10, height: 10)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(syncStateLabel)
-                        .font(.caption.weight(.semibold))
-                    if let date = connectionManager.lastSyncDate {
-                        Text("Last sync: \(date, style: .relative) ago")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                Spacer()
-
-                if connectionManager.connectionState == .syncing {
-                    ProgressView().controlSize(.small)
-                }
+            VStack(spacing: 0) {
+                ConnectionStatusOrnament(
+                    state: connectionManager.connectionState,
+                    isPaired: connectionManager.isPaired,
+                    pendingCount: connectionManager.pendingCount,
+                    pingMs: connectionManager.serverResponseTimeMs
+                )
 
                 if connectionManager.connectionState == .error || connectionManager.connectionState == .disconnected {
-                    Button {
-                        Task {
-                            await connectionManager.tryConnect(store: store)
-                            if connectionManager.connectionState == .connected {
-                                toastManager?.show(.success, message: "Connected to display")
+                    Divider().opacity(0.3)
+                    HStack {
+                        Spacer(minLength: 0)
+                        Button {
+                            Task {
+                                await connectionManager.tryConnect(store: store)
+                                if connectionManager.connectionState == .connected {
+                                    toastManager?.show(.success, message: "Connected to display")
+                                }
                             }
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.caption.weight(.medium))
                         }
-                    } label: {
-                        Label("Reconnect", systemImage: "arrow.clockwise")
-                            .font(.caption.weight(.medium))
+                        .buttonStyle(.bordered)
+                        .tint(.cyan)
+                        .controlSize(.small)
                     }
-                    .buttonStyle(.bordered)
-                    .tint(.cyan)
-                    .controlSize(.small)
+                    .padding(.horizontal, DS.Spacing.md)
+                    .padding(.bottom, DS.Spacing.sm)
                 }
             }
         }
@@ -559,16 +552,6 @@ struct SettingsView: View {
         case .searching: return .orange
         case .error: return .red
         case .disconnected: return .secondary
-        }
-    }
-
-    private var syncStateLabel: String {
-        switch connectionManager.connectionState {
-        case .connected: return "Connected to Display"
-        case .syncing: return "Syncing..."
-        case .searching: return "Searching..."
-        case .error: return connectionManager.lastError ?? "Connection Error"
-        case .disconnected: return "Not Connected"
         }
     }
 

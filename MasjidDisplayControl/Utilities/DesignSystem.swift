@@ -294,11 +294,13 @@ struct StatusChip: View {
     let text: String
     let color: Color
     let icon: String?
+    var fixedWidth: CGFloat?
 
-    init(_ text: String, color: Color = .blue, icon: String? = nil) {
+    init(_ text: String, color: Color = .blue, icon: String? = nil, fixedWidth: CGFloat? = nil) {
         self.text = text
         self.color = color
         self.icon = icon
+        self.fixedWidth = fixedWidth
     }
 
     var body: some View {
@@ -309,12 +311,116 @@ struct StatusChip: View {
             }
             Text(text)
                 .font(.caption.weight(.semibold))
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .minimumScaleFactor(0.85)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
         .background(color.opacity(0.15))
         .foregroundStyle(color)
         .clipShape(.capsule)
+        .frame(width: fixedWidth)
+    }
+}
+
+// MARK: - Connection Status Ornament
+
+struct ConnectionStatusOrnament: View {
+    let state: SyncConnectionState
+    let isPaired: Bool
+    let pendingCount: Int
+    let pingMs: Int
+
+    var body: some View {
+        HStack(spacing: DS.Spacing.sm) {
+            // 3D glow dot
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [stateColor, stateColor.opacity(0.4)],
+                            center: .topLeading,
+                            startRadius: 0,
+                            endRadius: 10
+                        )
+                    )
+                    .frame(width: 14, height: 14)
+                    .shadow(color: stateColor.opacity(0.7), radius: 6, x: 0, y: 2)
+            }
+
+            // State icon only — no long label strings
+            Image(systemName: stateIcon)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(stateColor)
+                .frame(width: 22, alignment: .center)
+                .symbolEffect(.pulse, isActive: state == .searching)
+
+            if isPaired {
+                Image(systemName: "checkmark.seal.fill")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(.green)
+            }
+
+            if state == .syncing {
+                ProgressView()
+                    .controlSize(.small)
+                    .tint(stateColor)
+                    .frame(width: 18, alignment: .center)
+            }
+
+            Spacer(minLength: 0)
+
+            // Queue badge — fixed 44pt width so layout never shifts
+            if pendingCount > 0 {
+                HStack(spacing: 3) {
+                    Image(systemName: "tray.full.fill")
+                        .font(.caption2.weight(.bold))
+                    Text("\(min(pendingCount, 99))")
+                        .font(.caption2.weight(.bold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                }
+                .foregroundStyle(.orange)
+                .frame(width: 44, alignment: .trailing)
+            }
+
+            // Ping chip — fixed 52pt width so layout never shifts
+            if pingMs > 0 && state == .connected {
+                HStack(spacing: 3) {
+                    Image(systemName: "bolt.fill")
+                        .font(.caption2)
+                    Text("\(pingMs)ms")
+                        .font(.caption2.monospacedDigit())
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                }
+                .foregroundStyle(pingMs < 200 ? .green : .orange)
+                .frame(width: 52, alignment: .trailing)
+            }
+        }
+        .frame(height: 56)
+        .padding(.horizontal, DS.Spacing.md)
+    }
+
+    private var stateColor: Color {
+        switch state {
+        case .connected: return .green
+        case .syncing: return .blue
+        case .searching: return .orange
+        case .error: return .red
+        case .disconnected: return Color(.secondaryLabel)
+        }
+    }
+
+    private var stateIcon: String {
+        switch state {
+        case .connected: return "checkmark.circle.fill"
+        case .syncing: return "arrow.triangle.2.circlepath"
+        case .searching: return "magnifyingglass"
+        case .error: return "exclamationmark.triangle.fill"
+        case .disconnected: return "wifi.slash"
+        }
     }
 }
 

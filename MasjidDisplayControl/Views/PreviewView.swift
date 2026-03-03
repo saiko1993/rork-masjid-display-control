@@ -243,51 +243,63 @@ struct PreviewView: View {
                     LiveDisplayWebView(url: url, refreshTrigger: refreshTrigger, forceReloadTrigger: forceReloadTrigger)
                         .clipShape(.rect(cornerRadius: 8))
                         .padding(8)
-                } else if checkingServer {
-                    VStack(spacing: 16) {
-                        ProgressView()
-                            .tint(.white)
-                            .controlSize(.large)
-                        Text("Connecting to display...")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
                 } else {
-                    VStack(spacing: 20) {
-                        Image(systemName: "tv.slash")
-                            .font(.system(size: 48, weight: .light))
-                            .foregroundStyle(.secondary)
+                    // Offline: render with the same DisplayRendererView engine used by the app,
+                    // honouring the user's theme, timeFormat, largeMode, and ticker config.
+                    let preset = ScreenPreset.presets.first { $0.id == selectedPresetId } ?? ScreenPreset.presets[0]
+                    let tw = CGFloat(preset.width)
+                    let th = CGFloat(preset.height)
+                    let aspect = tw / th
+                    let availW = geo.size.width - 16
+                    let availH = geo.size.height - 16
+                    let fitW = min(availW, availH * aspect)
+                    let fitH = fitW / aspect
+                    let scale = fitW / tw
 
-                        Text("Display Not Reachable")
-                            .font(.title3.weight(.semibold))
-                            .foregroundStyle(.white)
+                    ZStack {
+                        DisplayRendererView(
+                            store: store,
+                            theme: store.currentTheme,
+                            screenWidth: tw,
+                            screenHeight: th,
+                            now: effectiveTime
+                        )
+                        .frame(width: tw, height: th)
+                        .scaleEffect(scale, anchor: .center)
+                        .frame(width: fitW, height: fitH)
 
-                        Text("Cannot reach \(store.pushTarget.baseUrl)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-
-                        HStack(spacing: 12) {
-                            Button {
-                                checkServerReachability()
-                            } label: {
-                                Label("Retry", systemImage: "arrow.clockwise")
-                                    .font(.subheadline.weight(.medium))
+                        // Overlay: connecting spinner or retry button
+                        VStack {
+                            Spacer()
+                            HStack(spacing: 8) {
+                                if checkingServer {
+                                    ProgressView().controlSize(.small).tint(.white)
+                                    Text("Connecting...")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                } else {
+                                    Button {
+                                        checkServerReachability()
+                                    } label: {
+                                        Image(systemName: "arrow.clockwise")
+                                            .font(.caption.weight(.medium))
+                                    }
+                                    .buttonStyle(.bordered)
+                                    .tint(.cyan)
+                                    .controlSize(.small)
+                                }
                             }
-                            .buttonStyle(.borderedProminent)
-                            .tint(.cyan)
-
-                            Button {
-                                withAnimation { previewMode = .localHTML }
-                            } label: {
-                                Label("Use Local Preview", systemImage: "globe")
-                                    .font(.subheadline.weight(.medium))
-                            }
-                            .buttonStyle(.bordered)
-                            .tint(.white)
+                            .padding(8)
+                            .background(.black.opacity(0.55))
+                            .clipShape(.capsule)
+                            .padding(.bottom, 12)
                         }
+                        .frame(width: fitW, height: fitH)
                     }
-                    .padding()
+                    .frame(width: fitW, height: fitH)
+                    .clipShape(.rect(cornerRadius: 8))
+                    .shadow(color: store.currentTheme.palette.accent.opacity(0.15), radius: 20)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
 
                 demoBadge(in: geo)
@@ -435,10 +447,8 @@ struct PreviewView: View {
                 serverReachable = false
             }
             checkingServer = false
-
-            if !serverReachable && previewMode == .liveServer {
-                withAnimation { previewMode = .localHTML }
-            }
+            // When offline in liveServer mode we stay in liveServer and show the native renderer
+            // so we no longer auto-switch to localHTML here.
         }
     }
 }

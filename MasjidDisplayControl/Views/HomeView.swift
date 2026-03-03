@@ -133,72 +133,52 @@ struct HomeView: View {
         if let cm = connectionManager {
             let isError = cm.connectionState == .error
             DSCard(glow: connectionColor(cm.connectionState)) {
-                HStack(spacing: DS.Spacing.sm) {
-                    ConnectionPulseView(
-                        isConnected: cm.connectionState == .connected,
-                        color: connectionColor(cm.connectionState)
+                VStack(spacing: 0) {
+                    ConnectionStatusOrnament(
+                        state: cm.connectionState,
+                        isPaired: cm.isPaired,
+                        pendingCount: cm.pendingCount,
+                        pingMs: cm.serverResponseTimeMs
                     )
-                    .frame(width: 14, height: 14)
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        HStack(spacing: 6) {
-                            Text(connectionLabel(cm.connectionState))
-                                .font(.subheadline.weight(.semibold))
-                            if cm.isPaired {
-                                Image(systemName: "checkmark.seal.fill")
-                                    .font(.caption2)
-                                    .foregroundStyle(.green)
-                            }
-                        }
-                        if let date = cm.lastSyncDate {
-                            Text("Last sync: \(date, style: .relative) ago")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-
-                    Spacer()
-
-                    if cm.connectionState == .syncing {
-                        ProgressView().controlSize(.small)
-                    }
-
-                    if let nm = networkMonitor {
-                        StatusChip(nm.isConnected ? nm.interfaceType : "Offline", color: nm.isConnected ? .cyan : .red, icon: nm.isConnected ? "wifi" : "wifi.slash")
-                    }
-
-                    if cm.connectionState == .connected && cm.serverResponseTimeMs > 0 {
-                        StatusChip("\(cm.serverResponseTimeMs)ms", color: cm.serverResponseTimeMs < 200 ? .green : .orange, icon: "bolt.fill")
-                    }
-
-                    if cm.pendingCount > 0 {
-                        StatusChip("Queue: \(cm.pendingCount)", color: .orange, icon: "tray.full.fill")
-                    }
 
                     if cm.connectionState == .disconnected || cm.connectionState == .error {
-                        Button {
-                            isReconnecting = true
-                            Task {
-                                await cm.reconnect(store: store)
-                                isReconnecting = false
-                                if cm.connectionState == .connected {
-                                    toastManager?.show(.success, message: "Connected to display")
+                        Divider().opacity(0.3)
+                        HStack {
+                            if let date = cm.lastSyncDate {
+                                Text(date, style: .relative)
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.85)
+                                    .environment(\.layoutDirection, .leftToRight)
+                            }
+                            Spacer(minLength: 0)
+                            Button {
+                                isReconnecting = true
+                                Task {
+                                    await cm.reconnect(store: store)
+                                    isReconnecting = false
+                                    if cm.connectionState == .connected {
+                                        toastManager?.show(.success, message: "Connected to display")
+                                    } else {
+                                        toastManager?.show(.error, message: cm.lastError ?? "Connection failed")
+                                    }
+                                }
+                            } label: {
+                                if isReconnecting {
+                                    ProgressView().controlSize(.small)
                                 } else {
-                                    toastManager?.show(.error, message: cm.lastError ?? "Connection failed")
+                                    Image(systemName: "arrow.clockwise")
+                                        .font(.caption.weight(.semibold))
                                 }
                             }
-                        } label: {
-                            if isReconnecting {
-                                ProgressView().controlSize(.small)
-                            } else {
-                                Label("Reconnect", systemImage: "arrow.clockwise")
-                                    .font(.caption.weight(.semibold))
-                            }
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.small)
+                            .tint(.cyan)
+                            .disabled(isReconnecting)
                         }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.small)
-                        .tint(.cyan)
-                        .disabled(isReconnecting)
+                        .padding(.horizontal, DS.Spacing.md)
+                        .padding(.bottom, DS.Spacing.sm)
                     }
                 }
             }
@@ -537,16 +517,6 @@ struct HomeView: View {
         case .searching: return .orange
         case .error: return .red
         case .disconnected: return .secondary
-        }
-    }
-
-    private func connectionLabel(_ state: SyncConnectionState) -> String {
-        switch state {
-        case .connected: return "Connected to Display"
-        case .syncing: return "Syncing..."
-        case .searching: return "Searching..."
-        case .error: return connectionManager?.lastError ?? "Error"
-        case .disconnected: return "Not Connected"
         }
     }
 }
