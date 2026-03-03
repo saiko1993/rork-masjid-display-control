@@ -128,7 +128,7 @@ struct PushView: View {
                     statusPill("Paired", icon: "checkmark.seal.fill", isActive: true, color: .green)
                 }
                 if connectionManager.pendingCount > 0 {
-                    statusPill("Queue: \(connectionManager.pendingCount)", icon: "tray.full.fill", isActive: true, color: .orange)
+                    statusPill("\(connectionManager.pendingCount)", icon: "tray.full.fill", isActive: true, color: .orange)
                 }
                 if let date = connectionManager.lastSyncDate {
                     statusPill(date.formatted(.relative(presentation: .named)), icon: "clock", isActive: true, color: .blue)
@@ -668,7 +668,7 @@ struct PushView: View {
                         StatusChip("Retry \(pushService.retryCount)/3", color: .orange)
                     }
                     if pushService.queueLength > 0 {
-                        StatusChip("Queue: \(pushService.queueLength)", color: .blue)
+                        StatusChip("\(pushService.queueLength)", color: .blue, icon: "tray.full.fill")
                     }
                 }
             }
@@ -882,6 +882,9 @@ struct PushView: View {
                 .font(.caption2.weight(.bold))
             Text(text)
                 .font(.caption2.weight(.semibold))
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .minimumScaleFactor(0.85)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 5)

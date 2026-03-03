@@ -105,10 +105,12 @@ struct PreviewView: View {
                         HStack(spacing: 4) {
                             Image(systemName: mode.icon)
                             Text(mode.label)
+                                .lineLimit(1)
                         }
                         .font(.caption.weight(.medium))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
+                        .frame(height: 56)
                         .background(previewMode == mode ? AnyShapeStyle(.tint.opacity(0.25)) : AnyShapeStyle(.ultraThinMaterial))
                         .clipShape(.capsule)
                     }
@@ -278,9 +280,9 @@ struct PreviewView: View {
                             .tint(.cyan)
 
                             Button {
-                                withAnimation { previewMode = .localHTML }
+                                withAnimation { previewMode = .nativeRenderer }
                             } label: {
-                                Label("Use Local Preview", systemImage: "globe")
+                                Label("Use Native Preview", systemImage: "tv")
                                     .font(.subheadline.weight(.medium))
                             }
                             .buttonStyle(.bordered)
@@ -437,7 +439,7 @@ struct PreviewView: View {
             checkingServer = false
 
             if !serverReachable && previewMode == .liveServer {
-                withAnimation { previewMode = .localHTML }
+                withAnimation { previewMode = .nativeRenderer }
             }
         }
     }

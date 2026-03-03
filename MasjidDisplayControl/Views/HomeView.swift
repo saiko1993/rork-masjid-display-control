@@ -101,6 +101,10 @@ struct HomeView: View {
                 Text("بسم الله الرحمن الرحيم")
                     .font(.system(size: 16, design: .serif))
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .minimumScaleFactor(0.85)
+                    .environment(\.layoutDirection, .rightToLeft)
 
                 Text(store.currentTheme.nameEn)
                     .font(.caption.weight(.semibold))
@@ -172,7 +176,7 @@ struct HomeView: View {
                     }
 
                     if cm.pendingCount > 0 {
-                        StatusChip("Queue: \(cm.pendingCount)", color: .orange, icon: "tray.full.fill")
+                        StatusChip("\(cm.pendingCount)", color: .orange, icon: "tray.full.fill")
                     }
 
                     if cm.connectionState == .disconnected || cm.connectionState == .error {
