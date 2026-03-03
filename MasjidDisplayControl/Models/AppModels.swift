@@ -292,6 +292,11 @@ nonisolated struct IqamaConfig: Codable, Sendable, Equatable {
     var effectiveMode: IqamaMode {
         iqamaMode ?? (mode == "fixedTime" ? .fixedTime : .afterAdhan)
     }
+
+    mutating func normalizeMode() {
+        iqamaMode = effectiveMode
+        mode = effectiveMode.rawValue
+    }
 }
 
 nonisolated struct PrayerMinutes: Codable, Sendable, Equatable {
@@ -537,14 +542,21 @@ nonisolated struct AudioConfig: Codable, Sendable, Equatable {
     var perPrayerVolume: PrayerVolumeOverride
     var preAdhanReminderMinutes: Int
     var reminderSoundType: ReminderSoundType
+    var iqamaVolume: Int?
+    var reminderVolume: Int?
 
     static let `default` = AudioConfig(
         adhanMode: .both,
         globalVolume: 80,
         perPrayerVolume: .empty,
         preAdhanReminderMinutes: 0,
-        reminderSoundType: .none
+        reminderSoundType: .none,
+        iqamaVolume: nil,
+        reminderVolume: nil
     )
+
+    var effectiveIqamaVolume: Int { iqamaVolume ?? globalVolume }
+    var effectiveReminderVolume: Int { reminderVolume ?? globalVolume }
 }
 
 nonisolated enum DateDisplayMode: String, Codable, CaseIterable, Sendable {

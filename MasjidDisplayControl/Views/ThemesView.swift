@@ -176,7 +176,8 @@ struct ThemeDetailView: View {
                     }
                 }
                 .padding(DS.Spacing.md)
-                .glassPanel()
+                .glassLayer(.card)
+                .elevation(.level2)
 
                 VStack(alignment: .leading, spacing: DS.Spacing.sm) {
                     SectionHeader(title: "Properties", icon: "slider.horizontal.3", color: .blue)
@@ -194,7 +195,8 @@ struct ThemeDetailView: View {
                     }
                 }
                 .padding(DS.Spacing.md)
-                .glassPanel()
+                .glassLayer(.card)
+                .elevation(.level2)
 
                 NavigationLink(value: AppRoute.themeStudio(themeId)) {
                     Label("Open Theme Studio", systemImage: "slider.horizontal.below.square.and.square.filled")

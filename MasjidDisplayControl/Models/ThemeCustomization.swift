@@ -55,6 +55,9 @@ nonisolated struct TickerConfig: Codable, Sendable, Equatable {
     var pauseDuringAdhan: Bool
     var announcements: [AnnouncementMessage]
     var rotationIntervalMinutes: Int
+    var messagePriority: TickerPriority?
+    var startTime: String?
+    var endTime: String?
 
     static let `default` = TickerConfig(
         mode: .quran,
@@ -62,8 +65,29 @@ nonisolated struct TickerConfig: Codable, Sendable, Equatable {
         messageExpiresAt: nil,
         pauseDuringAdhan: true,
         announcements: [],
-        rotationIntervalMinutes: 5
+        rotationIntervalMinutes: 5,
+        messagePriority: nil,
+        startTime: nil,
+        endTime: nil
     )
+
+    var effectivePriority: TickerPriority { messagePriority ?? .normal }
+}
+
+nonisolated enum TickerPriority: String, Codable, CaseIterable, Sendable {
+    case low
+    case normal
+    case high
+    case urgent
+
+    var displayName: String {
+        switch self {
+        case .low: return "Low"
+        case .normal: return "Normal"
+        case .high: return "High"
+        case .urgent: return "Urgent"
+        }
+    }
 }
 
 nonisolated struct ThemeColorOverride: Codable, Sendable, Equatable {

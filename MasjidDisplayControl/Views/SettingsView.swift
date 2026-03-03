@@ -868,6 +868,7 @@ struct SettingsView: View {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let state = PersistentState(
+            schemaVersion: PersistentState.currentSchemaVersion,
             location: store.location,
             calculation: store.calculation,
             iqama: store.iqama,

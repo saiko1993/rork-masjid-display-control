@@ -122,6 +122,7 @@ class AppStore {
 
     func save() {
         let state = PersistentState(
+            schemaVersion: PersistentState.currentSchemaVersion,
             location: location,
             calculation: calculation,
             iqama: iqama,
@@ -185,6 +186,7 @@ class AppStore {
 }
 
 nonisolated struct PersistentState: Codable, Sendable {
+    let schemaVersion: Int?
     let location: LocationConfig
     let calculation: CalculationConfig
     let iqama: IqamaConfig
@@ -207,4 +209,6 @@ nonisolated struct PersistentState: Codable, Sendable {
     let ramadanConfig: RamadanConfig?
     let quranProgram: QuranProgramConfig?
     let prayerEnabled: PrayerEnabled?
+
+    static let currentSchemaVersion = 1
 }

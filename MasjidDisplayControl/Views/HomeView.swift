@@ -209,12 +209,12 @@ struct HomeView: View {
                 StatusChip(store.location.cityName, color: .blue, icon: "location.fill")
                 StatusChip(store.currentTheme.nameEn, color: .orange, icon: "paintpalette.fill")
                 StatusChip(store.display.layout.displayName, color: .indigo, icon: "rectangle.split.2x1")
-                StatusChip("Bright: \(store.display.brightness)%", color: .yellow, icon: "sun.max.fill")
+                StatusChip("\(store.display.brightness)%", color: .yellow, icon: "sun.max.fill")
                 if store.advanced.scheduleMode == "simulated" {
                     StatusChip("SIM", color: .orange, icon: "clock.badge.questionmark")
                 }
                 if isFriday && store.jumuah.enabled {
-                    StatusChip("Jumu'ah \(store.jumuah.jumuahTime)", color: .green, icon: "building.columns.fill")
+                    StatusChip(store.jumuah.jumuahTime, color: .green, icon: "building.columns.fill")
                 }
             }
         }

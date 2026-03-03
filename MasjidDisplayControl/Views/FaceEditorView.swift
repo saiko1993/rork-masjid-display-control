@@ -195,7 +195,8 @@ struct FaceEditorView: View {
             .tint(.orange)
         }
         .padding(DS.Spacing.md)
-        .glassPanel()
+        .glassLayer(.card)
+        .elevation(.level2)
     }
 
     private func componentToggleRow(_ comp: FaceComponentId) -> some View {
@@ -278,7 +279,8 @@ struct FaceEditorView: View {
             }
         }
         .padding(DS.Spacing.md)
-        .glassPanel()
+        .glassLayer(.card)
+        .elevation(.level2)
     }
 
     // MARK: - Colors Tab
@@ -344,7 +346,8 @@ struct FaceEditorView: View {
             }
         }
         .padding(DS.Spacing.md)
-        .glassPanel()
+        .glassLayer(.card)
+        .elevation(.level2)
     }
 
     // MARK: - Background Tab
@@ -419,7 +422,8 @@ struct FaceEditorView: View {
             }
         }
         .padding(DS.Spacing.md)
-        .glassPanel()
+        .glassLayer(.card)
+        .elevation(.level2)
     }
 
     // MARK: - Pattern Tab
@@ -445,7 +449,8 @@ struct FaceEditorView: View {
             infoRow("Glow Style", value: PayloadBuilder.glowString(baseTheme.layers.glowStyle))
         }
         .padding(DS.Spacing.md)
-        .glassPanel()
+        .glassLayer(.card)
+        .elevation(.level2)
     }
 
     // MARK: - Typography Tab
@@ -479,7 +484,8 @@ struct FaceEditorView: View {
             infoRow("Font Scale Range", value: "\(String(format: "%.2f", baseTheme.tokens.minFontScale)) – \(String(format: "%.2f", baseTheme.tokens.maxFontScale))")
         }
         .padding(DS.Spacing.md)
-        .glassPanel()
+        .glassLayer(.card)
+        .elevation(.level2)
     }
 
     // MARK: - Ticker Tab
@@ -521,7 +527,8 @@ struct FaceEditorView: View {
                 .font(.subheadline)
         }
         .padding(DS.Spacing.md)
-        .glassPanel()
+        .glassLayer(.card)
+        .elevation(.level2)
     }
 
     // MARK: - Bottom Actions

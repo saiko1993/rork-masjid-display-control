@@ -41,34 +41,54 @@ struct StatusOrnamentBar: View {
         return nm.isConnected ? .cyan : .red
     }
 
+    private var isSpinning: Bool {
+        guard let cm else { return false }
+        return cm.connectionState == .searching || cm.connectionState == .syncing
+    }
+
+    private var showReconnect: Bool {
+        guard let cm else { return false }
+        return cm.connectionState == .disconnected || cm.connectionState == .error
+    }
+
+    private var showQueue: Bool {
+        guard let cm else { return false }
+        return cm.pendingCount > 0
+    }
+
+    private var showPaired: Bool {
+        guard let cm else { return false }
+        return cm.isPaired
+    }
+
     var body: some View {
-        HStack(spacing: DS.Spacing.xs) {
-            DSStatusDot(color: dotColor, isAnimating: cm?.connectionState == .connected || cm?.connectionState == .syncing, size: 10)
+        HStack(spacing: 6) {
+            DSStatusDot(color: dotColor, isAnimating: dotColor == .green || dotColor == .blue, size: 10)
                 .frame(width: 20, height: 20)
 
-            fixedChip(icon: stateIcon, color: dotColor, spinning: cm?.connectionState == .searching || cm?.connectionState == .syncing)
-                .frame(width: 84)
+            chipView(icon: stateIcon, color: dotColor, spinning: isSpinning)
+                .frame(width: 84, height: 28)
 
-            fixedChip(icon: networkIcon, color: networkColor)
-                .frame(width: 84)
+            chipView(icon: networkIcon, color: networkColor)
+                .frame(width: 84, height: 28)
 
-            if let cm, cm.pendingCount > 0 {
-                queueChip(count: cm.pendingCount)
-                    .frame(width: 84)
+            if showQueue {
+                queueChip(count: cm?.pendingCount ?? 0)
+                    .frame(width: 84, height: 28)
             }
 
             Spacer(minLength: 0)
 
-            if let cm, cm.connectionState == .disconnected || cm.connectionState == .error {
+            if showReconnect {
                 reconnectButton
                     .frame(width: 44, height: 44)
             }
 
-            if let cm, cm.isPaired {
+            if showPaired {
                 Image(systemName: "checkmark.seal.fill")
                     .font(.system(size: 12))
                     .foregroundStyle(.green)
-                    .frame(width: 20)
+                    .frame(width: 20, height: 20)
             }
         }
         .frame(height: 56)
@@ -77,7 +97,7 @@ struct StatusOrnamentBar: View {
         .elevation(.level2)
     }
 
-    private func fixedChip(icon: String, color: Color, spinning: Bool = false) -> some View {
+    private func chipView(icon: String, color: Color, spinning: Bool = false) -> some View {
         HStack(spacing: 4) {
             if spinning {
                 ProgressView()
@@ -92,7 +112,6 @@ struct StatusOrnamentBar: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(color.opacity(0.12))
         .clipShape(.capsule)
-        .frame(height: 28)
     }
 
     private func queueChip(count: Int) -> some View {
@@ -107,7 +126,6 @@ struct StatusOrnamentBar: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.orange.opacity(0.12))
         .clipShape(.capsule)
-        .frame(height: 28)
         .accessibilityLabel("Queue: \(count)")
     }
 

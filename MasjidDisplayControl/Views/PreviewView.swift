@@ -10,7 +10,7 @@ struct PreviewView: View {
     @State private var keepAwake: Bool = true
     @State private var useSimulatedTime: Bool = false
     @State private var simulatedTime: Date = Date()
-    @State private var previewMode: PreviewMode = .liveServer
+    @State private var previewMode: PreviewMode = .nativeRenderer
     @State private var selectedPresetId: String = "1080p"
     @State private var showDebugBadge: Bool = false
     @State private var refreshTrigger: Int = 0
@@ -422,6 +422,22 @@ struct PreviewView: View {
                 .frame(width: fitW, height: fitH)
 
                 VStack {
+                    HStack {
+                        Spacer()
+                        HStack(spacing: 6) {
+                            Circle()
+                                .fill(.orange)
+                                .frame(width: 6, height: 6)
+                            Text("OFFLINE")
+                                .font(.caption2.weight(.bold))
+                                .foregroundStyle(.orange)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(.black.opacity(0.6))
+                        .clipShape(.capsule)
+                        .padding(8)
+                    }
                     Spacer()
                     HStack(spacing: DS.Spacing.sm) {
                         Button {
@@ -466,7 +482,7 @@ struct PreviewView: View {
             checkingServer = false
 
             if !serverReachable && previewMode == .liveServer {
-                withAnimation { previewMode = .nativeRenderer }
+                withAnimation(.spring(duration: 0.3)) { previewMode = .nativeRenderer }
             }
         }
     }

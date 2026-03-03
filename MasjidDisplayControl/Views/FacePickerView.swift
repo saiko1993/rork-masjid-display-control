@@ -122,7 +122,8 @@ struct FacePickerView: View {
             }
         }
         .padding(DS.Spacing.md)
-        .glassPanel()
+        .glassLayer(.card)
+        .elevation(.level2)
     }
 
     private var activeInfoSection: some View {
@@ -155,7 +156,8 @@ struct FacePickerView: View {
             .tint(.purple)
         }
         .padding(DS.Spacing.md)
-        .glassPanel()
+        .glassLayer(.card)
+        .elevation(.level2)
     }
 
     private var pushBar: some View {
