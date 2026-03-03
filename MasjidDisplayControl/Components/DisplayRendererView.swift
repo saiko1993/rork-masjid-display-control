@@ -319,7 +319,7 @@ struct DisplayRendererView: View {
         HStack(spacing: 16 * scaleFactor) {
             VStack(spacing: 12 * scaleFactor) {
                 Spacer()
-                BigClockView(time: now, theme: theme, scaleFactor: scaleFactor)
+                BigClockView(time: now, theme: theme, scaleFactor: scaleFactor, timeFormat: store.timeFormat)
                 DateBlockView(date: now, config: store.dateDisplay, theme: theme, scaleFactor: scaleFactor)
                 Spacer()
                 themedCard {
@@ -347,7 +347,8 @@ struct DisplayRendererView: View {
                         theme: theme,
                         language: store.display.language,
                         scaleFactor: scaleFactor,
-                        isCompact: false
+                        isCompact: false,
+                        timeFormat: store.timeFormat
                     )
                 }
 
@@ -377,7 +378,7 @@ struct DisplayRendererView: View {
 
     private func compactLayout(state: PrayerStateInfo, pauseTicker: Bool) -> some View {
         VStack(spacing: 8 * scaleFactor) {
-            BigClockView(time: now, theme: theme, scaleFactor: scaleFactor)
+            BigClockView(time: now, theme: theme, scaleFactor: scaleFactor, timeFormat: store.timeFormat)
 
             DateBlockView(date: now, config: store.dateDisplay, theme: theme, scaleFactor: scaleFactor)
 
@@ -401,7 +402,8 @@ struct DisplayRendererView: View {
                     theme: theme,
                     language: store.display.language,
                     scaleFactor: scaleFactor,
-                    isCompact: true
+                    isCompact: true,
+                    timeFormat: store.timeFormat
                 )
             }
 

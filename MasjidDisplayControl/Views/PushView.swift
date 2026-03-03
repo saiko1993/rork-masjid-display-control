@@ -97,8 +97,7 @@ struct PushView: View {
                     title: isReconnecting ? "Connecting..." : "Reconnect",
                     tint: .blue,
                     isLoading: isReconnecting,
-                    isDisabled: connectionManager.connectionState == .searching,
-                    height: 90
+                    isDisabled: connectionManager.connectionState == .searching
                 ) {
                     isReconnecting = true
                     Task {
@@ -117,8 +116,7 @@ struct PushView: View {
                     icon: showPairSuccess ? "checkmark.circle.fill" : "link.badge.plus",
                     title: showPairSuccess ? "Paired!" : "Pair",
                     tint: showPairSuccess ? .green : .indigo,
-                    isLoading: pairingInProgress,
-                    height: 90
+                    isLoading: pairingInProgress
                 ) {
                     pairingInProgress = true
                     toastManager?.show(.syncing, message: "Pairing with display...")
@@ -144,8 +142,7 @@ struct PushView: View {
                     title: isSendingTheme ? "Sending..." : "Send Theme",
                     tint: .orange,
                     isLoading: isSendingTheme,
-                    isDisabled: connectionManager.connectionState != .connected,
-                    height: 80
+                    isDisabled: connectionManager.connectionState != .connected
                 ) {
                     isSendingTheme = true
                     toastManager?.show(.syncing, message: "Sending theme pack...")
@@ -165,8 +162,7 @@ struct PushView: View {
                     title: isSendingSync ? "Syncing..." : "Light Sync",
                     tint: .cyan,
                     isLoading: isSendingSync,
-                    isDisabled: connectionManager.connectionState != .connected,
-                    height: 80
+                    isDisabled: connectionManager.connectionState != .connected
                 ) {
                     isSendingSync = true
                     toastManager?.show(.syncing, message: "Syncing...")
@@ -184,8 +180,7 @@ struct PushView: View {
                 DSActionTileButton(
                     icon: store.saveConfirmation ? "checkmark.circle.fill" : "square.and.arrow.down.fill",
                     title: store.saveConfirmation ? "Saved!" : "Save",
-                    tint: store.saveConfirmation ? .green : .blue,
-                    height: 80
+                    tint: store.saveConfirmation ? .green : .blue
                 ) {
                     store.save()
                     connectionManager.scheduleLightSync(store: store, bleManager: bleManager)

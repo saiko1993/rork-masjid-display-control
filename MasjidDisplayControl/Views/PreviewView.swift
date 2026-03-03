@@ -95,7 +95,7 @@ struct PreviewView: View {
 
     private var controlBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: DS.Spacing.sm) {
+            HStack(spacing: DS.Spacing.xs) {
                 ForEach(PreviewMode.allCases, id: \.self) { mode in
                     Button {
                         withAnimation(.spring(duration: 0.3)) {
@@ -104,15 +104,13 @@ struct PreviewView: View {
                     } label: {
                         HStack(spacing: 4) {
                             Image(systemName: mode.icon)
+                                .font(DSTokens.Font.chipIcon)
                             Text(mode.label)
+                                .font(DSTokens.Font.chipLabel)
                                 .lineLimit(1)
-                                .truncationMode(.tail)
-                                .minimumScaleFactor(0.85)
                         }
-                        .font(.caption.weight(.medium))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
-                        .frame(height: 56)
                         .background(previewMode == mode ? AnyShapeStyle(.tint.opacity(0.25)) : AnyShapeStyle(.ultraThinMaterial))
                         .clipShape(.capsule)
                     }
@@ -125,7 +123,7 @@ struct PreviewView: View {
                         Image(systemName: "play.circle.fill")
                             .foregroundStyle(.purple)
                         Text("Demo")
-                            .font(.caption.weight(.medium))
+                            .font(DSTokens.Font.chipLabel)
                         Button {
                             store.advanceDemoPhase()
                         } label: {
@@ -138,7 +136,7 @@ struct PreviewView: View {
                 } else {
                     Toggle(isOn: $useSimulatedTime) {
                         Label("Sim", systemImage: "clock.arrow.circlepath")
-                            .font(.caption.weight(.medium))
+                            .font(DSTokens.Font.chipLabel)
                     }
                     .toggleStyle(.button)
                     .buttonStyle(.bordered)
@@ -168,7 +166,7 @@ struct PreviewView: View {
                     }
                 } label: {
                     Label("Theme", systemImage: "paintpalette")
-                        .font(.caption.weight(.medium))
+                        .font(DSTokens.Font.chipLabel)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .background(.ultraThinMaterial)
@@ -180,7 +178,7 @@ struct PreviewView: View {
                     UIApplication.shared.isIdleTimerDisabled = keepAwake
                 } label: {
                     Image(systemName: keepAwake ? "lock.display" : "display")
-                        .font(.caption.weight(.medium))
+                        .font(DSTokens.Font.chipLabel)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .background(keepAwake ? AnyShapeStyle(.tint.opacity(0.2)) : AnyShapeStyle(.ultraThinMaterial))
@@ -201,7 +199,7 @@ struct PreviewView: View {
                             ScreenPreset.presets.first { $0.id == selectedPresetId }?.name ?? "",
                             systemImage: "rectangle.dashed"
                         )
-                        .font(.caption.weight(.medium))
+                        .font(DSTokens.Font.chipLabel)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .background(.ultraThinMaterial)
@@ -212,7 +210,7 @@ struct PreviewView: View {
                         showDebugBadge.toggle()
                     } label: {
                         Image(systemName: showDebugBadge ? "ladybug.fill" : "ladybug")
-                            .font(.caption.weight(.medium))
+                            .font(DSTokens.Font.chipLabel)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
                             .background(showDebugBadge ? AnyShapeStyle(.tint.opacity(0.2)) : AnyShapeStyle(.ultraThinMaterial))
@@ -221,10 +219,19 @@ struct PreviewView: View {
                 }
             }
             .padding(.horizontal, DS.Spacing.md)
-            .padding(.vertical, DS.Spacing.xs)
         }
-        .frame(height: 56)
-        .background(.black.opacity(0.85))
+        .contentMargins(.vertical, 8)
+        .frame(height: 48)
+        .background {
+            ZStack {
+                Color.black.opacity(0.9)
+                LinearGradient(
+                    colors: [.white.opacity(0.04), .clear],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+        }
     }
 
     @ViewBuilder

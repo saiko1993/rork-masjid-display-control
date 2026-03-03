@@ -11,32 +11,37 @@ struct DSActionTileButton: View {
     var tint: Color = .cyan
     var isLoading: Bool = false
     var isDisabled: Bool = false
-    var height: CGFloat = 88
+    var height: CGFloat = DSTokens.ButtonSize.tileHeight
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 6) {
+            VStack(spacing: 4) {
                 if isLoading {
                     ProgressView()
                         .controlSize(.regular)
                         .tint(tint)
-                        .frame(height: 28)
+                        .frame(height: 26)
                 } else {
                     Image(systemName: icon)
-                        .font(.system(size: 24, weight: .medium))
+                        .font(.system(size: DSTokens.ButtonSize.tileIconSize, weight: .medium))
                         .foregroundStyle(tint)
                         .symbolEffect(.bounce, value: isLoading)
+                        .frame(height: 26)
                 }
                 Text(title)
-                    .font(.subheadline.weight(.semibold))
+                    .font(DSTokens.Font.tileTitle)
                     .foregroundStyle(isDisabled ? .tertiary : .primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
                 if !subtitle.isEmpty {
                     Text(subtitle)
-                        .font(.caption2)
+                        .font(DSTokens.Font.tileSubtitle)
                         .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
             }
+            .padding(.horizontal, 8)
             .frame(maxWidth: .infinity)
             .frame(height: height)
             .background {

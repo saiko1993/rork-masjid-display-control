@@ -55,10 +55,13 @@ struct DSButton: View {
                         .font(.system(size: 16, weight: .semibold))
                 }
                 Text(title)
-                    .font(.headline)
+                    .font(DSTokens.Font.headline)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
+            .padding(.horizontal, DS.Spacing.md)
             .frame(maxWidth: fullWidth ? .infinity : nil)
-            .frame(height: 50)
+            .frame(height: DSTokens.ButtonSize.primaryHeight)
         }
         .buttonStyle(dsButtonStyle)
         .disabled(isDisabled || isLoading)

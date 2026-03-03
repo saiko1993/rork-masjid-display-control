@@ -377,7 +377,7 @@ struct FaceRendererView: View {
             VStack(spacing: 12 * scaleFactor) {
                 Spacer()
                 if has(.clock) {
-                    BigClockView(time: now, theme: theme, scaleFactor: scaleFactor)
+                    BigClockView(time: now, theme: theme, scaleFactor: scaleFactor, timeFormat: store.timeFormat)
                 }
                 if has(.dateBlock) {
                     DateBlockView(date: now, config: store.dateDisplay, theme: theme, scaleFactor: scaleFactor)
@@ -416,7 +416,8 @@ struct FaceRendererView: View {
                             theme: theme,
                             language: store.display.language,
                             scaleFactor: scaleFactor,
-                            isCompact: false
+                            isCompact: false,
+                            timeFormat: store.timeFormat
                         )
                     }
                 }
@@ -438,7 +439,7 @@ struct FaceRendererView: View {
                 .frame(height: 40 * scaleFactor)
 
             if has(.clock) {
-                BigClockView(time: now, theme: theme, scaleFactor: scaleFactor * 1.1)
+                BigClockView(time: now, theme: theme, scaleFactor: scaleFactor * 1.1, timeFormat: store.timeFormat)
             }
 
             HStack(spacing: 12 * scaleFactor) {
@@ -462,7 +463,8 @@ struct FaceRendererView: View {
                         theme: theme,
                         language: store.display.language,
                         scaleFactor: scaleFactor,
-                        isCompact: breakpoint == .tiny || breakpoint == .small
+                        isCompact: breakpoint == .tiny || breakpoint == .small,
+                        timeFormat: store.timeFormat
                     )
                 }
             }
@@ -506,7 +508,7 @@ struct FaceRendererView: View {
             Spacer()
 
             if has(.clock) {
-                BigClockView(time: now, theme: theme, scaleFactor: scaleFactor * 1.4)
+                BigClockView(time: now, theme: theme, scaleFactor: scaleFactor * 1.4, timeFormat: store.timeFormat)
             }
 
             if has(.dateBlock) {
@@ -585,7 +587,7 @@ struct FaceRendererView: View {
         return VStack(spacing: 4 * scaleFactor) {
             HStack {
                 if has(.clock) {
-                    BigClockView(time: now, theme: theme, scaleFactor: scaleFactor * 0.9)
+                    BigClockView(time: now, theme: theme, scaleFactor: scaleFactor * 0.9, timeFormat: store.timeFormat)
                 }
                 Spacer()
                 if has(.dateBlock) {
@@ -676,7 +678,7 @@ struct FaceRendererView: View {
                 themedCard {
                     VStack(spacing: 8 * scaleFactor) {
                         if has(.clock) {
-                            BigClockView(time: now, theme: theme, scaleFactor: scaleFactor * 0.85)
+                            BigClockView(time: now, theme: theme, scaleFactor: scaleFactor * 0.85, timeFormat: store.timeFormat)
                         }
                         if has(.dateBlock) {
                             DateBlockView(date: now, config: store.dateDisplay, theme: theme, scaleFactor: scaleFactor * 0.85)
@@ -713,7 +715,8 @@ struct FaceRendererView: View {
                             theme: theme,
                             language: store.display.language,
                             scaleFactor: scaleFactor,
-                            isCompact: breakpoint == .tiny
+                            isCompact: breakpoint == .tiny,
+                            timeFormat: store.timeFormat
                         )
                     }
                 }
@@ -746,7 +749,7 @@ struct FaceRendererView: View {
             ottomanOrnament
 
             if has(.clock) {
-                BigClockView(time: now, theme: theme, scaleFactor: scaleFactor * 1.15)
+                BigClockView(time: now, theme: theme, scaleFactor: scaleFactor * 1.15, timeFormat: store.timeFormat)
                     .padding(.vertical, 4 * scaleFactor)
             }
 
@@ -773,7 +776,8 @@ struct FaceRendererView: View {
                         theme: theme,
                         language: store.display.language,
                         scaleFactor: scaleFactor,
-                        isCompact: breakpoint == .tiny || breakpoint == .small
+                        isCompact: breakpoint == .tiny || breakpoint == .small,
+                        timeFormat: store.timeFormat
                     )
                 }
             }

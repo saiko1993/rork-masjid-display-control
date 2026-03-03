@@ -305,18 +305,18 @@ struct StatusChip: View {
         HStack(spacing: 4) {
             if let icon {
                 Image(systemName: icon)
-                    .font(.caption2.weight(.bold))
+                    .font(DSTokens.Font.chipIcon)
             }
             Text(text)
-                .font(.caption.weight(.semibold))
+                .font(DSTokens.Font.chipLabel)
                 .lineLimit(1)
                 .truncationMode(.tail)
-                .minimumScaleFactor(0.85)
+                .minimumScaleFactor(0.8)
         }
         .frame(minWidth: 32)
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
-        .frame(minWidth: 44)
+        .frame(minWidth: DSTokens.ButtonSize.minTapTarget)
         .background(color.opacity(0.15))
         .foregroundStyle(color)
         .clipShape(.capsule)
@@ -341,8 +341,9 @@ struct SectionHeader: View {
                     .foregroundStyle(color)
             }
             Text(title)
-                .font(.headline)
+                .font(DSTokens.Font.sectionTitle)
                 .foregroundStyle(.primary)
+                .lineLimit(1)
         }
     }
 }
@@ -419,27 +420,30 @@ struct ActionTileView: View {
     let color: Color
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 6) {
             ZStack {
                 Circle()
                     .fill(color.opacity(0.15))
-                    .frame(width: 48, height: 48)
+                    .frame(width: 44, height: 44)
                 Image(systemName: icon)
-                    .font(.system(size: 20, weight: .medium))
+                    .font(.system(size: DSTokens.ButtonSize.tileIconSize, weight: .medium))
                     .foregroundStyle(color)
             }
 
             Text(title)
-                .font(.subheadline.weight(.semibold))
+                .font(DSTokens.Font.tileTitle)
                 .foregroundStyle(.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
 
             if !subtitle.isEmpty {
                 Text(subtitle)
-                    .font(.caption2)
+                    .font(DSTokens.Font.tileSubtitle)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
         }
+        .padding(.horizontal, 8)
         .frame(maxWidth: .infinity)
         .frame(minHeight: 110)
         .glassLayer(.card)

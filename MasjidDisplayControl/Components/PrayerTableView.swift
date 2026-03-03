@@ -7,12 +7,13 @@ struct PrayerTableView: View {
     let language: AppLanguage
     let scaleFactor: CGFloat
     let isCompact: Bool
+    var timeFormat: TimeFormat = .twentyFour
 
-    private let timeFormatter: DateFormatter = {
+    private var timeFormatter: DateFormatter {
         let f = DateFormatter()
-        f.dateFormat = "h:mm"
+        f.dateFormat = timeFormat == .twelve ? "h:mm" : "HH:mm"
         return f
-    }()
+    }
 
     var body: some View {
         let density = theme.tokens.tableDensity

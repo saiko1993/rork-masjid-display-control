@@ -6,9 +6,27 @@ enum DSTokens {
         static let title: SwiftUI.Font = .title2.weight(.bold)
         static let headline: SwiftUI.Font = .headline
         static let subhead: SwiftUI.Font = .subheadline
+        static let body: SwiftUI.Font = .subheadline
         static let caption: SwiftUI.Font = .caption
+        static let caption2: SwiftUI.Font = .caption2
         static let mono: SwiftUI.Font = .system(.body, design: .monospaced, weight: .semibold)
         static let monoSmall: SwiftUI.Font = .system(.caption, design: .monospaced, weight: .medium)
+
+        static let sectionTitle: SwiftUI.Font = .headline
+        static let settingsLabel: SwiftUI.Font = .subheadline
+        static let settingsValue: SwiftUI.Font = .subheadline.weight(.medium)
+        static let chipLabel: SwiftUI.Font = .caption.weight(.semibold)
+        static let chipIcon: SwiftUI.Font = .caption2.weight(.bold)
+        static let tileTitle: SwiftUI.Font = .subheadline.weight(.semibold)
+        static let tileSubtitle: SwiftUI.Font = .caption2
+    }
+
+    enum ButtonSize {
+        static let tileHeight: CGFloat = 84
+        static let tileIconSize: CGFloat = 22
+        static let primaryHeight: CGFloat = 50
+        static let compactHeight: CGFloat = 36
+        static let minTapTarget: CGFloat = 44
     }
 
     enum Palette {
