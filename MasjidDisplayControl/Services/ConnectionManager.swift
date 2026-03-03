@@ -419,6 +419,10 @@ class ConnectionManager {
             ("POST /v1/sync", base + "/v1/sync", "POST"),
             ("POST /v1/upload-background", base + "/v1/upload-background", "POST"),
             ("POST /v1/ticker", base + "/v1/ticker", "POST"),
+            ("POST /v1/audio", base + "/v1/audio", "POST"),
+            ("POST /v1/power", base + "/v1/power", "POST"),
+            ("POST /v1/ramadan", base + "/v1/ramadan", "POST"),
+            ("POST /v1/quran-program", base + "/v1/quran-program", "POST"),
         ]
 
         var results: [DiagnosticResult] = []

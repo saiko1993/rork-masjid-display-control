@@ -11,15 +11,21 @@ struct SettingsView: View {
         ScrollView {
             VStack(spacing: DS.Spacing.md) {
                 connectionStatusBar
+                profileSection
                 timeFormatSection
                 locationSection
                 calculationSection
+                prayerEnabledSection
                 iqamaSection
                 jumuahSection
+                audioSection
                 tickerSection
                 dateDisplaySection
                 displaySection
                 brightnessSection
+                powerSection
+                ramadanSection
+                quranProgramSection
                 securitySection
                 advancedSection
                 dataSection
@@ -63,6 +69,26 @@ struct SettingsView: View {
         .onChange(of: store.largeMode) { _, _ in
             store.save()
             connectionManager.scheduleLightSync(store: store, bleManager: bleManager)
+        }
+    }
+
+    private var profileSection: some View {
+        DSSection("Profile", icon: "person.crop.circle.fill", color: .mint) {
+            VStack(spacing: DS.Spacing.sm) {
+                HStack {
+                    Text("Active Profile").font(.subheadline)
+                    Spacer()
+                    Picker("Profile", selection: $store.activeProfile) {
+                        ForEach(SettingsProfile.allCases, id: \.self) { p in
+                            Label(p.displayName, systemImage: p.icon).tag(p)
+                        }
+                    }
+                    .tint(.secondary)
+                }
+                Text("Profiles apply preset offsets and iqama timings")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 
@@ -148,13 +174,71 @@ struct SettingsView: View {
                 Toggle("Enable Iqama", isOn: $store.iqama.enabled)
                     .font(.subheadline).tint(.orange)
                 if store.iqama.enabled {
-                    iqamaStepper("Fajr", value: $store.iqama.iqamaMinutes.fajr, range: 5...60)
-                    iqamaStepper("Dhuhr", value: $store.iqama.iqamaMinutes.dhuhr, range: 5...60)
-                    iqamaStepper("Asr", value: $store.iqama.iqamaMinutes.asr, range: 5...60)
-                    iqamaStepper("Maghrib", value: $store.iqama.iqamaMinutes.maghrib, range: 3...30)
-                    iqamaStepper("Isha", value: $store.iqama.iqamaMinutes.isha, range: 5...60)
+                    HStack {
+                        Text("Iqama Mode").font(.subheadline)
+                        Spacer()
+                        Picker("Mode", selection: Binding(
+                            get: { store.iqama.effectiveMode },
+                            set: { store.iqama.iqamaMode = $0; store.iqama.mode = $0.rawValue }
+                        )) {
+                            ForEach(IqamaMode.allCases, id: \.self) { m in
+                                Text(m.displayName).tag(m)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .frame(width: 180)
+                    }
+
+                    if store.iqama.effectiveMode == .afterAdhan {
+                        iqamaStepper("Fajr", value: $store.iqama.iqamaMinutes.fajr, range: 5...60)
+                        iqamaStepper("Dhuhr", value: $store.iqama.iqamaMinutes.dhuhr, range: 5...60)
+                        iqamaStepper("Asr", value: $store.iqama.iqamaMinutes.asr, range: 5...60)
+                        iqamaStepper("Maghrib", value: $store.iqama.iqamaMinutes.maghrib, range: 3...30)
+                        iqamaStepper("Isha", value: $store.iqama.iqamaMinutes.isha, range: 5...60)
+                    } else {
+                        iqamaFixedTimeRow("Fajr", binding: Binding(
+                            get: { store.iqama.fixedTimes?.fajr ?? "05:30" },
+                            set: { ensureFixedTimes(); store.iqama.fixedTimes?.fajr = $0 }
+                        ))
+                        iqamaFixedTimeRow("Dhuhr", binding: Binding(
+                            get: { store.iqama.fixedTimes?.dhuhr ?? "13:00" },
+                            set: { ensureFixedTimes(); store.iqama.fixedTimes?.dhuhr = $0 }
+                        ))
+                        iqamaFixedTimeRow("Asr", binding: Binding(
+                            get: { store.iqama.fixedTimes?.asr ?? "16:30" },
+                            set: { ensureFixedTimes(); store.iqama.fixedTimes?.asr = $0 }
+                        ))
+                        iqamaFixedTimeRow("Maghrib", binding: Binding(
+                            get: { store.iqama.fixedTimes?.maghrib ?? "18:15" },
+                            set: { ensureFixedTimes(); store.iqama.fixedTimes?.maghrib = $0 }
+                        ))
+                        iqamaFixedTimeRow("Isha", binding: Binding(
+                            get: { store.iqama.fixedTimes?.isha ?? "20:00" },
+                            set: { ensureFixedTimes(); store.iqama.fixedTimes?.isha = $0 }
+                        ))
+                    }
                 }
             }
+        }
+    }
+
+    private func ensureFixedTimes() {
+        if store.iqama.fixedTimes == nil {
+            store.iqama.fixedTimes = .default
+        }
+    }
+
+    private func iqamaFixedTimeRow(_ prayer: String, binding: Binding<String>) -> some View {
+        HStack {
+            Text(prayer).font(.subheadline)
+                .frame(width: 70, alignment: .leading)
+            Spacer()
+            TextField("HH:mm", text: binding)
+                .multilineTextAlignment(.trailing)
+                .keyboardType(.numbersAndPunctuation)
+                .frame(width: 80)
+                .foregroundStyle(.secondary)
+                .font(.subheadline.monospacedDigit())
         }
     }
 
@@ -319,6 +403,24 @@ struct SettingsView: View {
     private var dateDisplaySection: some View {
         DSSection("Date Display", icon: "calendar", color: .red) {
             VStack(spacing: DS.Spacing.sm) {
+                HStack {
+                    Text("Display Mode").font(.subheadline)
+                    Spacer()
+                    Picker("Mode", selection: Binding(
+                        get: { store.dateDisplay.effectiveMode },
+                        set: { store.dateDisplay.displayMode = $0 }
+                    )) {
+                        ForEach(DateDisplayMode.allCases, id: \.self) { m in
+                            Text(m.displayName).tag(m)
+                        }
+                    }
+                    .tint(.secondary)
+                }
+                Stepper("Hijri Offset: \(store.dateDisplay.effectiveHijriOffset) days", value: Binding(
+                    get: { store.dateDisplay.effectiveHijriOffset },
+                    set: { store.dateDisplay.hijriOffsetDays = $0 }
+                ), in: -2...2)
+                    .font(.subheadline)
                 Toggle("Show Gregorian", isOn: $store.dateDisplay.showGregorian)
                     .font(.subheadline).tint(.cyan)
                 Toggle("Show Hijri", isOn: $store.dateDisplay.showHijri)
@@ -381,6 +483,71 @@ struct SettingsView: View {
         }
     }
 
+    private var prayerEnabledSection: some View {
+        DSSection("Prayer Enable/Disable", icon: "checkmark.circle.fill", color: .green) {
+            VStack(spacing: DS.Spacing.sm) {
+                Toggle("Fajr", isOn: $store.prayerEnabled.fajr)
+                    .font(.subheadline).tint(.green)
+                Toggle("Dhuhr", isOn: $store.prayerEnabled.dhuhr)
+                    .font(.subheadline).tint(.green)
+                Toggle("Asr", isOn: $store.prayerEnabled.asr)
+                    .font(.subheadline).tint(.green)
+                Toggle("Maghrib", isOn: $store.prayerEnabled.maghrib)
+                    .font(.subheadline).tint(.green)
+                Toggle("Isha", isOn: $store.prayerEnabled.isha)
+                    .font(.subheadline).tint(.green)
+            }
+        }
+    }
+
+    private var audioSection: some View {
+        DSSection("Audio & Adhan", icon: "speaker.wave.3.fill", color: .purple) {
+            VStack(spacing: DS.Spacing.sm) {
+                HStack {
+                    Text("Adhan Mode").font(.subheadline)
+                    Spacer()
+                    Picker("Mode", selection: $store.audio.adhanMode) {
+                        ForEach(AdhanMode.allCases, id: \.self) { m in
+                            Text(m.displayName).tag(m)
+                        }
+                    }
+                    .tint(.secondary)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text("Global Volume").font(.subheadline)
+                        Spacer()
+                        Text("\(store.audio.globalVolume)%")
+                            .font(.subheadline.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                    }
+                    Slider(value: Binding(
+                        get: { Double(store.audio.globalVolume) },
+                        set: { store.audio.globalVolume = Int($0) }
+                    ), in: 0...100, step: 5)
+                    .tint(.purple)
+                }
+
+                Stepper("Pre-Adhan Reminder: \(store.audio.preAdhanReminderMinutes) min", value: $store.audio.preAdhanReminderMinutes, in: 0...99)
+                    .font(.subheadline)
+
+                if store.audio.preAdhanReminderMinutes > 0 {
+                    HStack {
+                        Text("Reminder Sound").font(.subheadline)
+                        Spacer()
+                        Picker("Sound", selection: $store.audio.reminderSoundType) {
+                            ForEach(ReminderSoundType.allCases, id: \.self) { s in
+                                Text(s.displayName).tag(s)
+                            }
+                        }
+                        .tint(.secondary)
+                    }
+                }
+            }
+        }
+    }
+
     private var brightnessSection: some View {
         DSSection("Brightness Schedule", icon: "sun.max.fill", color: .yellow) {
             VStack(spacing: DS.Spacing.sm) {
@@ -395,6 +562,144 @@ struct SettingsView: View {
                         .font(.subheadline)
                     Stepper("Night starts: \(store.brightnessSchedule.nightStartHour):00", value: $store.brightnessSchedule.nightStartHour, in: 18...23)
                         .font(.subheadline)
+                }
+            }
+        }
+    }
+
+    private var powerSection: some View {
+        DSSection("Power & Screen", icon: "bolt.fill", color: .orange) {
+            VStack(spacing: DS.Spacing.sm) {
+                Toggle("Screen Off Schedule", isOn: $store.power.screenOffSchedule.enabled)
+                    .font(.subheadline).tint(.orange)
+                if store.power.screenOffSchedule.enabled {
+                    Stepper("Off at: \(store.power.screenOffSchedule.fromHour):00", value: $store.power.screenOffSchedule.fromHour, in: 0...23)
+                        .font(.subheadline)
+                    Stepper("On at: \(store.power.screenOffSchedule.toHour):00", value: $store.power.screenOffSchedule.toHour, in: 0...23)
+                        .font(.subheadline)
+                }
+                Stepper("Wake before Fajr: \(store.power.autoWakeBeforeFajrMinutes) min", value: $store.power.autoWakeBeforeFajrMinutes, in: 0...60, step: 5)
+                    .font(.subheadline)
+            }
+        }
+    }
+
+    private var ramadanSection: some View {
+        DSSection("Ramadan / Isha Rules", icon: "moon.stars.fill", color: .yellow) {
+            VStack(spacing: DS.Spacing.sm) {
+                HStack {
+                    Text("Ramadan Status")
+                        .font(.subheadline)
+                    Spacer()
+                    Text(RamadanConfig.isRamadan() ? "Active" : "Not Active")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(RamadanConfig.isRamadan() ? .green : .secondary)
+                }
+
+                Toggle("Auto-Detect Ramadan", isOn: $store.ramadanConfig.autoDetect)
+                    .font(.subheadline).tint(.yellow)
+
+                HStack {
+                    Text("Isha Mode").font(.subheadline)
+                    Spacer()
+                    Picker("Mode", selection: $store.ramadanConfig.ishaMode) {
+                        ForEach(RamadanIshaMode.allCases, id: \.self) { m in
+                            Text(m.displayName).tag(m)
+                        }
+                    }
+                    .tint(.secondary)
+                }
+
+                if store.ramadanConfig.ishaMode == .afterMaghribMinutes {
+                    Stepper("After Maghrib: \(store.ramadanConfig.ishaAfterMaghribMinutes) min", value: $store.ramadanConfig.ishaAfterMaghribMinutes, in: 30...180, step: 5)
+                        .font(.subheadline)
+                }
+
+                if store.ramadanConfig.ishaMode == .fixedTimeInRamadan {
+                    HStack {
+                        Text("Fixed Isha Time").font(.subheadline)
+                        Spacer()
+                        TextField("HH:mm", text: $store.ramadanConfig.ishaFixedTime)
+                            .multilineTextAlignment(.trailing)
+                            .keyboardType(.numbersAndPunctuation)
+                            .frame(width: 80)
+                            .foregroundStyle(.secondary)
+                            .font(.subheadline)
+                    }
+                }
+            }
+        }
+    }
+
+    private var quranProgramSection: some View {
+        DSSection("Quran / Khatma Program", icon: "book.fill", color: .teal) {
+            VStack(spacing: DS.Spacing.sm) {
+                Toggle("Enable Quran Program", isOn: $store.quranProgram.enabled)
+                    .font(.subheadline).tint(.teal)
+
+                if store.quranProgram.enabled {
+                    HStack {
+                        Text("Khatma Mode").font(.subheadline)
+                        Spacer()
+                        Picker("Mode", selection: $store.quranProgram.khatmaMode) {
+                            ForEach(KhatmaMode.allCases, id: \.self) { m in
+                                Text(m.displayName).tag(m)
+                            }
+                        }
+                        .tint(.secondary)
+                    }
+
+                    HStack {
+                        Text("Playback").font(.subheadline)
+                        Spacer()
+                        Picker("Playback", selection: $store.quranProgram.playbackMode) {
+                            ForEach(QuranPlaybackMode.allCases, id: \.self) { m in
+                                Text(m.displayName).tag(m)
+                            }
+                        }
+                        .tint(.secondary)
+                    }
+
+                    HStack {
+                        Text("Reciter").font(.subheadline)
+                        Spacer()
+                        Picker("Reciter", selection: $store.quranProgram.reciterId) {
+                            ForEach(QuranProgramConfig.reciters, id: \.id) { r in
+                                Text(r.name).tag(r.id)
+                            }
+                        }
+                        .tint(.secondary)
+                        .onChange(of: store.quranProgram.reciterId) { _, newValue in
+                            if let reciter = QuranProgramConfig.reciters.first(where: { $0.id == newValue }) {
+                                store.quranProgram.reciterName = reciter.name
+                            }
+                        }
+                    }
+
+                    HStack {
+                        Text("Daily Start Time").font(.subheadline)
+                        Spacer()
+                        TextField("HH:mm", text: $store.quranProgram.dailyStartTime)
+                            .multilineTextAlignment(.trailing)
+                            .keyboardType(.numbersAndPunctuation)
+                            .frame(width: 80)
+                            .foregroundStyle(.secondary)
+                            .font(.subheadline)
+                    }
+
+                    Stepper("Current Day: \(store.quranProgram.currentDay)", value: $store.quranProgram.currentDay, in: 1...60)
+                        .font(.subheadline)
+
+                    Button {
+                        store.quranProgram.currentDay = 1
+                        store.save()
+                    } label: {
+                        Label("Reset to Day 1", systemImage: "arrow.counterclockwise")
+                            .font(.caption.weight(.medium))
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(.teal)
+                    .controlSize(.small)
                 }
             }
         }
@@ -638,7 +943,13 @@ struct SettingsView: View {
             ticker: store.ticker,
             themeCustomizations: store.themeCustomizations,
             largeMode: store.largeMode,
-            faceConfig: store.faceConfig
+            faceConfig: store.faceConfig,
+            activeProfile: store.activeProfile,
+            audio: store.audio,
+            power: store.power,
+            ramadanConfig: store.ramadanConfig,
+            quranProgram: store.quranProgram,
+            prayerEnabled: store.prayerEnabled
         )
         guard let data = try? encoder.encode(state),
               let json = String(data: data, encoding: .utf8) else { return }

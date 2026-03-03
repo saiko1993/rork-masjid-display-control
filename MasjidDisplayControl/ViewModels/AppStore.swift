@@ -24,6 +24,12 @@ class AppStore {
     var saveConfirmation: Bool = false
     var largeMode: Bool = false
     var faceConfig: FaceConfiguration = .default
+    var activeProfile: SettingsProfile = .normal
+    var audio: AudioConfig = .default
+    var power: PowerConfig = .default
+    var ramadanConfig: RamadanConfig = .default
+    var quranProgram: QuranProgramConfig = .default
+    var prayerEnabled: PrayerEnabled = .allEnabled
 
     var currentTheme: ThemeDefinition {
         let base = ThemeDefinition.theme(for: selectedTheme)
@@ -131,7 +137,13 @@ class AppStore {
             ticker: ticker,
             themeCustomizations: themeCustomizations,
             largeMode: largeMode,
-            faceConfig: faceConfig
+            faceConfig: faceConfig,
+            activeProfile: activeProfile,
+            audio: audio,
+            power: power,
+            ramadanConfig: ramadanConfig,
+            quranProgram: quranProgram,
+            prayerEnabled: prayerEnabled
         )
         let encoder = JSONEncoder()
         if let data = try? encoder.encode(state) {
@@ -163,6 +175,12 @@ class AppStore {
         themeCustomizations = state.themeCustomizations ?? .empty
         largeMode = state.largeMode ?? false
         faceConfig = state.faceConfig ?? .default
+        activeProfile = state.activeProfile ?? .normal
+        audio = state.audio ?? .default
+        power = state.power ?? .default
+        ramadanConfig = state.ramadanConfig ?? .default
+        quranProgram = state.quranProgram ?? .default
+        prayerEnabled = state.prayerEnabled ?? .allEnabled
     }
 }
 
@@ -183,4 +201,10 @@ nonisolated struct PersistentState: Codable, Sendable {
     let themeCustomizations: ThemeCustomizationStore?
     let largeMode: Bool?
     let faceConfig: FaceConfiguration?
+    let activeProfile: SettingsProfile?
+    let audio: AudioConfig?
+    let power: PowerConfig?
+    let ramadanConfig: RamadanConfig?
+    let quranProgram: QuranProgramConfig?
+    let prayerEnabled: PrayerEnabled?
 }

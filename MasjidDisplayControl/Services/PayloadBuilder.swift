@@ -114,6 +114,13 @@ nonisolated struct LightSyncPayload: Codable, Sendable {
     let ticker: TickerSyncPayload?
     let largeMode: Bool
     let faceId: String?
+    let audio: AudioSyncPayload?
+    let dateConfig: DateSyncPayload?
+    let power: PowerSyncPayload?
+    let ramadan: RamadanSyncPayload?
+    let quranProgram: QuranProgramSyncPayload?
+    let prayerEnabled: [String: Bool]?
+    let activeProfile: String?
 }
 
 nonisolated struct ScheduleEntry: Codable, Sendable {
@@ -159,6 +166,8 @@ nonisolated struct IqamaSyncPayload: Codable, Sendable {
     let enabled: Bool
     let mode: String
     let minutes: [String: Int]
+    let iqamaMode: String?
+    let fixedTimes: [String: String]?
 }
 
 nonisolated struct JumuahSyncPayload: Codable, Sendable {
@@ -188,6 +197,48 @@ nonisolated struct AnnouncementSyncPayload: Codable, Sendable {
     let id: String
     let text: String
     let isPinned: Bool
+}
+
+nonisolated struct AudioSyncPayload: Codable, Sendable {
+    let adhanMode: String
+    let globalVolume: Int
+    let perPrayerVolume: [String: Int]?
+    let preAdhanReminderMinutes: Int
+    let reminderSoundType: String
+}
+
+nonisolated struct DateSyncPayload: Codable, Sendable {
+    let displayMode: String
+    let hijriOffsetDays: Int
+    let showGregorian: Bool
+    let showHijri: Bool
+    let showWeekdayArabic: Bool
+    let showWeekdayEnglish: Bool
+}
+
+nonisolated struct PowerSyncPayload: Codable, Sendable {
+    let screenOffEnabled: Bool
+    let screenOffFromHour: Int
+    let screenOffToHour: Int
+    let autoWakeBeforeFajrMinutes: Int
+}
+
+nonisolated struct RamadanSyncPayload: Codable, Sendable {
+    let ishaMode: String
+    let ishaAfterMaghribMinutes: Int
+    let ishaFixedTime: String
+    let autoDetect: Bool
+    let isCurrentlyRamadan: Bool
+}
+
+nonisolated struct QuranProgramSyncPayload: Codable, Sendable {
+    let enabled: Bool
+    let khatmaMode: String
+    let playbackMode: String
+    let reciterId: String
+    let reciterName: String
+    let dailyStartTime: String
+    let currentDay: Int
 }
 
 struct PayloadBuilder {
@@ -320,6 +371,95 @@ struct PayloadBuilder {
         deviceTimeFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         deviceTimeFormatter.timeZone = tz
 
+        let iqamaPayload: IqamaSyncPayload? = includeConfig ? {
+            var fixedTimesDict: [String: String]? = nil
+            if let ft = store.iqama.fixedTimes, store.iqama.effectiveMode == .fixedTime {
+                fixedTimesDict = [
+                    "fajr": ft.fajr,
+                    "dhuhr": ft.dhuhr,
+                    "asr": ft.asr,
+                    "maghrib": ft.maghrib,
+                    "isha": ft.isha,
+                ]
+            }
+            return IqamaSyncPayload(
+                enabled: store.iqama.enabled,
+                mode: store.iqama.effectiveMode.rawValue,
+                minutes: [
+                    "fajr": store.iqama.iqamaMinutes.fajr,
+                    "dhuhr": store.iqama.iqamaMinutes.dhuhr,
+                    "asr": store.iqama.iqamaMinutes.asr,
+                    "maghrib": store.iqama.iqamaMinutes.maghrib,
+                    "isha": store.iqama.iqamaMinutes.isha,
+                ],
+                iqamaMode: store.iqama.effectiveMode.rawValue,
+                fixedTimes: fixedTimesDict
+            )
+        }() : nil
+
+        let audioPayload: AudioSyncPayload? = includeConfig ? {
+            var perPrayer: [String: Int]? = nil
+            let pv = store.audio.perPrayerVolume
+            if pv.hasOverrides {
+                var dict: [String: Int] = [:]
+                if let v = pv.fajr { dict["fajr"] = v }
+                if let v = pv.dhuhr { dict["dhuhr"] = v }
+                if let v = pv.asr { dict["asr"] = v }
+                if let v = pv.maghrib { dict["maghrib"] = v }
+                if let v = pv.isha { dict["isha"] = v }
+                perPrayer = dict
+            }
+            return AudioSyncPayload(
+                adhanMode: store.audio.adhanMode.rawValue,
+                globalVolume: store.audio.globalVolume,
+                perPrayerVolume: perPrayer,
+                preAdhanReminderMinutes: store.audio.preAdhanReminderMinutes,
+                reminderSoundType: store.audio.reminderSoundType.rawValue
+            )
+        }() : nil
+
+        let datePayload: DateSyncPayload? = includeConfig ? DateSyncPayload(
+            displayMode: store.dateDisplay.effectiveMode.rawValue,
+            hijriOffsetDays: store.dateDisplay.effectiveHijriOffset,
+            showGregorian: store.dateDisplay.showGregorian,
+            showHijri: store.dateDisplay.showHijri,
+            showWeekdayArabic: store.dateDisplay.showWeekdayArabic,
+            showWeekdayEnglish: store.dateDisplay.showWeekdayEnglish
+        ) : nil
+
+        let powerPayload: PowerSyncPayload? = includeConfig ? PowerSyncPayload(
+            screenOffEnabled: store.power.screenOffSchedule.enabled,
+            screenOffFromHour: store.power.screenOffSchedule.fromHour,
+            screenOffToHour: store.power.screenOffSchedule.toHour,
+            autoWakeBeforeFajrMinutes: store.power.autoWakeBeforeFajrMinutes
+        ) : nil
+
+        let ramadanPayload: RamadanSyncPayload? = includeConfig ? RamadanSyncPayload(
+            ishaMode: store.ramadanConfig.ishaMode.rawValue,
+            ishaAfterMaghribMinutes: store.ramadanConfig.ishaAfterMaghribMinutes,
+            ishaFixedTime: store.ramadanConfig.ishaFixedTime,
+            autoDetect: store.ramadanConfig.autoDetect,
+            isCurrentlyRamadan: RamadanConfig.isRamadan()
+        ) : nil
+
+        let quranPayload: QuranProgramSyncPayload? = includeConfig && store.quranProgram.enabled ? QuranProgramSyncPayload(
+            enabled: store.quranProgram.enabled,
+            khatmaMode: store.quranProgram.khatmaMode.rawValue,
+            playbackMode: store.quranProgram.playbackMode.rawValue,
+            reciterId: store.quranProgram.reciterId,
+            reciterName: store.quranProgram.reciterName,
+            dailyStartTime: store.quranProgram.dailyStartTime,
+            currentDay: store.quranProgram.currentDay
+        ) : nil
+
+        let prayerEnabledDict: [String: Bool]? = includeConfig ? [
+            "fajr": store.prayerEnabled.fajr,
+            "dhuhr": store.prayerEnabled.dhuhr,
+            "asr": store.prayerEnabled.asr,
+            "maghrib": store.prayerEnabled.maghrib,
+            "isha": store.prayerEnabled.isha,
+        ] : nil
+
         return LightSyncPayload(
             version: "3.0.0",
             pushId: UUID().uuidString,
@@ -357,17 +497,7 @@ struct PayloadBuilder {
                     "isha": store.calculation.offsetsMinutes.isha,
                 ]
             ) : nil,
-            iqama: includeConfig ? IqamaSyncPayload(
-                enabled: store.iqama.enabled,
-                mode: store.iqama.mode,
-                minutes: [
-                    "fajr": store.iqama.iqamaMinutes.fajr,
-                    "dhuhr": store.iqama.iqamaMinutes.dhuhr,
-                    "asr": store.iqama.iqamaMinutes.asr,
-                    "maghrib": store.iqama.iqamaMinutes.maghrib,
-                    "isha": store.iqama.iqamaMinutes.isha,
-                ]
-            ) : nil,
+            iqama: iqamaPayload,
             jumuah: includeConfig ? JumuahSyncPayload(
                 enabled: store.jumuah.enabled,
                 jumuahTime: store.jumuah.jumuahTime,
@@ -393,7 +523,14 @@ struct PayloadBuilder {
                 rotationIntervalMinutes: store.ticker.rotationIntervalMinutes
             ),
             largeMode: store.largeMode,
-            faceId: store.faceConfig.faceId.rawValue
+            faceId: store.faceConfig.faceId.rawValue,
+            audio: audioPayload,
+            dateConfig: datePayload,
+            power: powerPayload,
+            ramadan: ramadanPayload,
+            quranProgram: quranPayload,
+            prayerEnabled: prayerEnabledDict,
+            activeProfile: store.activeProfile.rawValue
         )
     }
 

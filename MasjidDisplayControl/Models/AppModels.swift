@@ -284,8 +284,14 @@ nonisolated struct IqamaConfig: Codable, Sendable, Equatable {
     var enabled: Bool
     var iqamaMinutes: PrayerMinutes
     var mode: String
+    var iqamaMode: IqamaMode?
+    var fixedTimes: IqamaFixedTimes?
 
-    static let `default` = IqamaConfig(enabled: true, iqamaMinutes: .defaultMinutes, mode: "afterAdhan")
+    static let `default` = IqamaConfig(enabled: true, iqamaMinutes: .defaultMinutes, mode: "afterAdhan", iqamaMode: .afterAdhan, fixedTimes: nil)
+
+    var effectiveMode: IqamaMode {
+        iqamaMode ?? (mode == "fixedTime" ? .fixedTime : .afterAdhan)
+    }
 }
 
 nonisolated struct PrayerMinutes: Codable, Sendable, Equatable {
@@ -329,8 +335,18 @@ nonisolated struct DateDisplayConfig: Codable, Sendable {
     var showHijri: Bool
     var showWeekdayArabic: Bool
     var showWeekdayEnglish: Bool
+    var displayMode: DateDisplayMode?
+    var hijriOffsetDays: Int?
 
-    static let `default` = DateDisplayConfig(showGregorian: true, showHijri: true, showWeekdayArabic: true, showWeekdayEnglish: false)
+    static let `default` = DateDisplayConfig(showGregorian: true, showHijri: true, showWeekdayArabic: true, showWeekdayEnglish: false, displayMode: .both, hijriOffsetDays: 0)
+
+    var effectiveMode: DateDisplayMode {
+        displayMode ?? .both
+    }
+
+    var effectiveHijriOffset: Int {
+        hijriOffsetDays ?? 0
+    }
 }
 
 nonisolated struct DisplayConfig: Codable, Sendable {
@@ -413,6 +429,298 @@ nonisolated struct AdvancedConfig: Codable, Sendable {
     var scheduleMode: String
 
     static let `default` = AdvancedConfig(adhanActiveSeconds: 120, prayerInProgressMinutes: 10, scheduleMode: "simulated")
+}
+
+nonisolated enum SettingsProfile: String, Codable, CaseIterable, Sendable {
+    case normal
+    case ramadan
+    case summer
+    case winter
+
+    var displayName: String {
+        switch self {
+        case .normal: return "Normal"
+        case .ramadan: return "Ramadan"
+        case .summer: return "Summer"
+        case .winter: return "Winter"
+        }
+    }
+
+    var displayNameAr: String {
+        switch self {
+        case .normal: return "عادي"
+        case .ramadan: return "رمضان"
+        case .summer: return "صيف"
+        case .winter: return "شتاء"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .normal: return "clock.fill"
+        case .ramadan: return "moon.stars.fill"
+        case .summer: return "sun.max.fill"
+        case .winter: return "snowflake"
+        }
+    }
+}
+
+nonisolated enum AdhanMode: String, Codable, CaseIterable, Sendable {
+    case adhanOnly
+    case iqamaOnly
+    case both
+    case mute
+
+    var displayName: String {
+        switch self {
+        case .adhanOnly: return "Adhan Only"
+        case .iqamaOnly: return "Iqama Only"
+        case .both: return "Both"
+        case .mute: return "Mute"
+        }
+    }
+}
+
+nonisolated enum ReminderSoundType: String, Codable, CaseIterable, Sendable {
+    case beep
+    case bell
+    case chime
+    case none
+
+    var displayName: String {
+        switch self {
+        case .beep: return "Beep"
+        case .bell: return "Bell"
+        case .chime: return "Chime"
+        case .none: return "None"
+        }
+    }
+}
+
+nonisolated struct PrayerVolumeOverride: Codable, Sendable, Equatable {
+    var fajr: Int?
+    var dhuhr: Int?
+    var asr: Int?
+    var maghrib: Int?
+    var isha: Int?
+
+    static let empty = PrayerVolumeOverride()
+
+    var hasOverrides: Bool {
+        fajr != nil || dhuhr != nil || asr != nil || maghrib != nil || isha != nil
+    }
+
+    func volume(for prayer: Prayer) -> Int? {
+        switch prayer {
+        case .fajr: return fajr
+        case .dhuhr: return dhuhr
+        case .asr: return asr
+        case .maghrib: return maghrib
+        case .isha: return isha
+        }
+    }
+
+    mutating func setVolume(_ value: Int?, for prayer: Prayer) {
+        switch prayer {
+        case .fajr: fajr = value
+        case .dhuhr: dhuhr = value
+        case .asr: asr = value
+        case .maghrib: maghrib = value
+        case .isha: isha = value
+        }
+    }
+}
+
+nonisolated struct AudioConfig: Codable, Sendable, Equatable {
+    var adhanMode: AdhanMode
+    var globalVolume: Int
+    var perPrayerVolume: PrayerVolumeOverride
+    var preAdhanReminderMinutes: Int
+    var reminderSoundType: ReminderSoundType
+
+    static let `default` = AudioConfig(
+        adhanMode: .both,
+        globalVolume: 80,
+        perPrayerVolume: .empty,
+        preAdhanReminderMinutes: 0,
+        reminderSoundType: .none
+    )
+}
+
+nonisolated enum DateDisplayMode: String, Codable, CaseIterable, Sendable {
+    case hijri
+    case gregorian
+    case both
+    case rotate
+
+    var displayName: String {
+        switch self {
+        case .hijri: return "Hijri Only"
+        case .gregorian: return "Gregorian Only"
+        case .both: return "Both"
+        case .rotate: return "Rotate"
+        }
+    }
+}
+
+nonisolated struct PrayerEnabled: Codable, Sendable, Equatable {
+    var fajr: Bool
+    var dhuhr: Bool
+    var asr: Bool
+    var maghrib: Bool
+    var isha: Bool
+
+    static let allEnabled = PrayerEnabled(fajr: true, dhuhr: true, asr: true, maghrib: true, isha: true)
+
+    func isEnabled(for prayer: Prayer) -> Bool {
+        switch prayer {
+        case .fajr: return fajr
+        case .dhuhr: return dhuhr
+        case .asr: return asr
+        case .maghrib: return maghrib
+        case .isha: return isha
+        }
+    }
+}
+
+nonisolated enum IqamaMode: String, Codable, CaseIterable, Sendable {
+    case afterAdhan
+    case fixedTime
+
+    var displayName: String {
+        switch self {
+        case .afterAdhan: return "After Adhan"
+        case .fixedTime: return "Fixed Time"
+        }
+    }
+}
+
+nonisolated struct IqamaFixedTimes: Codable, Sendable, Equatable {
+    var fajr: String
+    var dhuhr: String
+    var asr: String
+    var maghrib: String
+    var isha: String
+
+    static let `default` = IqamaFixedTimes(fajr: "05:30", dhuhr: "13:00", asr: "16:30", maghrib: "18:15", isha: "20:00")
+
+    func time(for prayer: Prayer) -> String {
+        switch prayer {
+        case .fajr: return fajr
+        case .dhuhr: return dhuhr
+        case .asr: return asr
+        case .maghrib: return maghrib
+        case .isha: return isha
+        }
+    }
+}
+
+nonisolated struct ScreenOffSchedule: Codable, Sendable, Equatable {
+    var enabled: Bool
+    var fromHour: Int
+    var toHour: Int
+
+    static let `default` = ScreenOffSchedule(enabled: false, fromHour: 23, toHour: 4)
+}
+
+nonisolated struct PowerConfig: Codable, Sendable, Equatable {
+    var screenOffSchedule: ScreenOffSchedule
+    var autoWakeBeforeFajrMinutes: Int
+
+    static let `default` = PowerConfig(screenOffSchedule: .default, autoWakeBeforeFajrMinutes: 15)
+}
+
+nonisolated enum RamadanIshaMode: String, Codable, CaseIterable, Sendable {
+    case normal
+    case afterMaghribMinutes
+    case fixedTimeInRamadan
+
+    var displayName: String {
+        switch self {
+        case .normal: return "Normal"
+        case .afterMaghribMinutes: return "After Maghrib (min)"
+        case .fixedTimeInRamadan: return "Fixed Time"
+        }
+    }
+}
+
+nonisolated struct RamadanConfig: Codable, Sendable, Equatable {
+    var ishaMode: RamadanIshaMode
+    var ishaAfterMaghribMinutes: Int
+    var ishaFixedTime: String
+    var autoDetect: Bool
+
+    static let `default` = RamadanConfig(
+        ishaMode: .normal,
+        ishaAfterMaghribMinutes: 90,
+        ishaFixedTime: "21:00",
+        autoDetect: true
+    )
+
+    static func isRamadan(date: Date = Date()) -> Bool {
+        let hijri = Calendar(identifier: .islamicUmmAlQura)
+        let month = hijri.component(.month, from: date)
+        return month == 9
+    }
+}
+
+nonisolated enum KhatmaMode: String, Codable, CaseIterable, Sendable {
+    case juzDaily
+    case hizbDaily
+    case surah
+
+    var displayName: String {
+        switch self {
+        case .juzDaily: return "Juz Daily (30 days)"
+        case .hizbDaily: return "Hizb Daily (60 days)"
+        case .surah: return "Surah Mode"
+        }
+    }
+}
+
+nonisolated enum QuranPlaybackMode: String, Codable, CaseIterable, Sendable {
+    case once
+    case continuous
+    case `repeat`
+
+    var displayName: String {
+        switch self {
+        case .once: return "Once"
+        case .continuous: return "Continuous"
+        case .repeat: return "Repeat"
+        }
+    }
+}
+
+nonisolated struct QuranProgramConfig: Codable, Sendable, Equatable {
+    var enabled: Bool
+    var khatmaMode: KhatmaMode
+    var playbackMode: QuranPlaybackMode
+    var reciterId: String
+    var reciterName: String
+    var dailyStartTime: String
+    var currentDay: Int
+
+    static let `default` = QuranProgramConfig(
+        enabled: false,
+        khatmaMode: .juzDaily,
+        playbackMode: .once,
+        reciterId: "mishari",
+        reciterName: "Mishari Rashid",
+        dailyStartTime: "04:30",
+        currentDay: 1
+    )
+
+    static let reciters: [(id: String, name: String)] = [
+        ("mishari", "Mishari Rashid"),
+        ("sudais", "Abdulrahman Al-Sudais"),
+        ("shuraim", "Saud Al-Shuraim"),
+        ("husary", "Mahmoud Khalil Al-Husary"),
+        ("minshawi", "Mohamed Siddiq Al-Minshawi"),
+        ("abdulbasit", "Abdulbasit Abdulsamad"),
+        ("maher", "Maher Al-Muaiqly"),
+        ("ghamdi", "Saad Al-Ghamdi"),
+    ]
 }
 
 nonisolated struct PrayerTime: Codable, Sendable, Identifiable {
