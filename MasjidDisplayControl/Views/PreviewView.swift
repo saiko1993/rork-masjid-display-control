@@ -112,6 +112,7 @@ struct PreviewView: View {
                         .font(.caption.weight(.medium))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
+                        .frame(height: 56)
                         .background(previewMode == mode ? AnyShapeStyle(.tint.opacity(0.25)) : AnyShapeStyle(.ultraThinMaterial))
                         .clipShape(.capsule)
                     }

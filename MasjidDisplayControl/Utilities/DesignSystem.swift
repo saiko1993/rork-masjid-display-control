@@ -313,6 +313,7 @@ struct StatusChip: View {
                 .truncationMode(.tail)
                 .minimumScaleFactor(0.85)
         }
+        .frame(minWidth: 32)
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
         .frame(minWidth: 44)

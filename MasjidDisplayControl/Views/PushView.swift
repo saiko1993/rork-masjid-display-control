@@ -669,7 +669,7 @@ struct PushView: View {
                         StatusChip("Retry \(pushService.retryCount)/3", color: .orange)
                     }
                     if pushService.queueLength > 0 {
-                        StatusChip("Queue: \(pushService.queueLength)", color: .blue)
+                        StatusChip("\(pushService.queueLength)", color: .blue, icon: "tray.full.fill")
                     }
                 }
             }
