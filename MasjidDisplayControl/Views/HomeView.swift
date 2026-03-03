@@ -177,6 +177,7 @@ struct HomeView: View {
 
                     if cm.pendingCount > 0 {
                         StatusChip("\(cm.pendingCount)", color: .orange, icon: "tray.full.fill")
+                            .accessibilityLabel("Queue: \(cm.pendingCount)")
                     }
 
                     if cm.connectionState == .disconnected || cm.connectionState == .error {

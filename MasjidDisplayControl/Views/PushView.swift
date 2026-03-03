@@ -129,6 +129,7 @@ struct PushView: View {
                 }
                 if connectionManager.pendingCount > 0 {
                     statusPill("\(connectionManager.pendingCount)", icon: "tray.full.fill", isActive: true, color: .orange)
+                        .accessibilityLabel("Queue: \(connectionManager.pendingCount)")
                 }
                 if let date = connectionManager.lastSyncDate {
                     statusPill(date.formatted(.relative(presentation: .named)), icon: "clock", isActive: true, color: .blue)
@@ -888,6 +889,7 @@ struct PushView: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
+        .frame(minWidth: 44)
         .background(isActive ? color.opacity(0.15) : Color(.tertiarySystemGroupedBackground))
         .foregroundStyle(isActive ? color : .secondary)
         .clipShape(.capsule)

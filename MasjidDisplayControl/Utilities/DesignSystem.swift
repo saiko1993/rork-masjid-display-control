@@ -316,6 +316,7 @@ struct StatusChip: View {
         .frame(minWidth: 32)
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
+        .frame(minWidth: 44)
         .background(color.opacity(0.15))
         .foregroundStyle(color)
         .clipShape(.capsule)

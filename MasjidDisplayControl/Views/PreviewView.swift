@@ -106,6 +106,8 @@ struct PreviewView: View {
                             Image(systemName: mode.icon)
                             Text(mode.label)
                                 .lineLimit(1)
+                                .truncationMode(.tail)
+                                .minimumScaleFactor(0.85)
                         }
                         .font(.caption.weight(.medium))
                         .padding(.horizontal, 10)
@@ -221,6 +223,7 @@ struct PreviewView: View {
             .padding(.horizontal, DS.Spacing.md)
             .padding(.vertical, DS.Spacing.xs)
         }
+        .frame(height: 56)
         .background(.black.opacity(0.85))
     }
 
@@ -282,7 +285,7 @@ struct PreviewView: View {
                             Button {
                                 withAnimation { previewMode = .nativeRenderer }
                             } label: {
-                                Label("Use Native Preview", systemImage: "tv")
+                                Label("Use Native Renderer", systemImage: "tv")
                                     .font(.subheadline.weight(.medium))
                             }
                             .buttonStyle(.bordered)
