@@ -13,7 +13,6 @@ struct HomeView: View {
     @State private var appearAnim: Bool = false
     @State private var isSendingTheme: Bool = false
     @State private var isSendingSync: Bool = false
-    @State private var isReconnecting: Bool = false
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -22,8 +21,13 @@ struct HomeView: View {
                 heroSection
                     .staggerAppear(visible: appearAnim, index: 0)
 
-                connectionStatusCard
-                    .staggerAppear(visible: appearAnim, index: 1)
+                StatusOrnamentBar(
+                    connectionManager: connectionManager,
+                    networkMonitor: networkMonitor,
+                    toastManager: toastManager,
+                    store: store
+                )
+                .staggerAppear(visible: appearAnim, index: 1)
 
                 nextPrayerCard
                     .staggerAppear(visible: appearAnim, index: 2)
@@ -103,12 +107,15 @@ struct HomeView: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.tail)
-                    .minimumScaleFactor(0.85)
+                    .minimumScaleFactor(0.8)
+                    .frame(maxWidth: 280)
                     .environment(\.layoutDirection, .rightToLeft)
 
                 Text(store.currentTheme.nameEn)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(store.currentTheme.palette.accent)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 5)
                     .background(store.currentTheme.palette.accent.opacity(0.15))
@@ -130,86 +137,6 @@ struct HomeView: View {
         )
         .elevation(.level3, color: store.currentTheme.palette.accent)
         .shimmer()
-    }
-
-    @ViewBuilder
-    private var connectionStatusCard: some View {
-        if let cm = connectionManager {
-            let isError = cm.connectionState == .error
-            DSCard(glow: connectionColor(cm.connectionState)) {
-                HStack(spacing: DS.Spacing.sm) {
-                    ConnectionPulseView(
-                        isConnected: cm.connectionState == .connected,
-                        color: connectionColor(cm.connectionState)
-                    )
-                    .frame(width: 14, height: 14)
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        HStack(spacing: 6) {
-                            Text(connectionLabel(cm.connectionState))
-                                .font(.subheadline.weight(.semibold))
-                            if cm.isPaired {
-                                Image(systemName: "checkmark.seal.fill")
-                                    .font(.caption2)
-                                    .foregroundStyle(.green)
-                            }
-                        }
-                        if let date = cm.lastSyncDate {
-                            Text("Last sync: \(date, style: .relative) ago")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-
-                    Spacer()
-
-                    if cm.connectionState == .syncing {
-                        ProgressView().controlSize(.small)
-                    }
-
-                    if let nm = networkMonitor {
-                        StatusChip(nm.isConnected ? nm.interfaceType : "Offline", color: nm.isConnected ? .cyan : .red, icon: nm.isConnected ? "wifi" : "wifi.slash")
-                    }
-
-                    if cm.connectionState == .connected && cm.serverResponseTimeMs > 0 {
-                        StatusChip("\(cm.serverResponseTimeMs)ms", color: cm.serverResponseTimeMs < 200 ? .green : .orange, icon: "bolt.fill")
-                    }
-
-                    if cm.pendingCount > 0 {
-                        StatusChip("\(cm.pendingCount)", color: .orange, icon: "tray.full.fill")
-                            .accessibilityLabel("Queue: \(cm.pendingCount)")
-                    }
-
-                    if cm.connectionState == .disconnected || cm.connectionState == .error {
-                        Button {
-                            isReconnecting = true
-                            Task {
-                                await cm.reconnect(store: store)
-                                isReconnecting = false
-                                if cm.connectionState == .connected {
-                                    toastManager?.show(.success, message: "Connected to display")
-                                } else {
-                                    toastManager?.show(.error, message: cm.lastError ?? "Connection failed")
-                                }
-                            }
-                        } label: {
-                            if isReconnecting {
-                                ProgressView().controlSize(.small)
-                            } else {
-                                Label("Reconnect", systemImage: "arrow.clockwise")
-                                    .font(.caption.weight(.semibold))
-                            }
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.small)
-                        .tint(.cyan)
-                        .disabled(isReconnecting)
-                    }
-                }
-            }
-            .focusRing(isActive: isError, color: .red)
-            .errorFocus(isError: isError)
-        }
     }
 
     private var nextPrayerCard: some View {
@@ -502,26 +429,6 @@ struct HomeView: View {
             return total > 0 ? (total - remaining) / total : 0
         default:
             return 0
-        }
-    }
-
-    private func connectionColor(_ state: SyncConnectionState) -> Color {
-        switch state {
-        case .connected: return .green
-        case .syncing: return .cyan
-        case .searching: return .orange
-        case .error: return .red
-        case .disconnected: return .secondary
-        }
-    }
-
-    private func connectionLabel(_ state: SyncConnectionState) -> String {
-        switch state {
-        case .connected: return "Connected to Display"
-        case .syncing: return "Syncing..."
-        case .searching: return "Searching..."
-        case .error: return connectionManager?.lastError ?? "Error"
-        case .disconnected: return "Not Connected"
         }
     }
 }

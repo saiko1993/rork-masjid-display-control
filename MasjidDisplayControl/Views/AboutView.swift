@@ -51,7 +51,7 @@ struct AboutView: View {
                     infoRow(icon: "globe", title: "Languages", value: "Arabic & English")
                 }
                 .padding(DS.Spacing.md)
-                .glassPanel()
+                .glassLayer(.card)
 
                 VStack(spacing: DS.Spacing.xs) {
                     Text("بسم الله الرحمن الرحيم")

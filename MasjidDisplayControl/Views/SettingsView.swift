@@ -10,7 +10,13 @@ struct SettingsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: DS.Spacing.md) {
-                connectionStatusBar
+                StatusOrnamentBar(
+                    connectionManager: connectionManager,
+                    networkMonitor: nil,
+                    toastManager: toastManager,
+                    store: store
+                )
+
                 profileSection
                 timeFormatSection
                 locationSection
@@ -483,23 +489,6 @@ struct SettingsView: View {
         }
     }
 
-    private var prayerEnabledSection: some View {
-        DSSection("Prayer Enable/Disable", icon: "checkmark.circle.fill", color: .green) {
-            VStack(spacing: DS.Spacing.sm) {
-                Toggle("Fajr", isOn: $store.prayerEnabled.fajr)
-                    .font(.subheadline).tint(.green)
-                Toggle("Dhuhr", isOn: $store.prayerEnabled.dhuhr)
-                    .font(.subheadline).tint(.green)
-                Toggle("Asr", isOn: $store.prayerEnabled.asr)
-                    .font(.subheadline).tint(.green)
-                Toggle("Maghrib", isOn: $store.prayerEnabled.maghrib)
-                    .font(.subheadline).tint(.green)
-                Toggle("Isha", isOn: $store.prayerEnabled.isha)
-                    .font(.subheadline).tint(.green)
-            }
-        }
-    }
-
     private var audioSection: some View {
         DSSection("Audio & Adhan", icon: "speaker.wave.3.fill", color: .purple) {
             VStack(spacing: DS.Spacing.sm) {
@@ -544,6 +533,23 @@ struct SettingsView: View {
                         .tint(.secondary)
                     }
                 }
+            }
+        }
+    }
+
+    private var prayerEnabledSection: some View {
+        DSSection("Prayer Enable/Disable", icon: "checkmark.circle.fill", color: .green) {
+            VStack(spacing: DS.Spacing.sm) {
+                Toggle("Fajr", isOn: $store.prayerEnabled.fajr)
+                    .font(.subheadline).tint(.green)
+                Toggle("Dhuhr", isOn: $store.prayerEnabled.dhuhr)
+                    .font(.subheadline).tint(.green)
+                Toggle("Asr", isOn: $store.prayerEnabled.asr)
+                    .font(.subheadline).tint(.green)
+                Toggle("Maghrib", isOn: $store.prayerEnabled.maghrib)
+                    .font(.subheadline).tint(.green)
+                Toggle("Isha", isOn: $store.prayerEnabled.isha)
+                    .font(.subheadline).tint(.green)
             }
         }
     }
@@ -808,72 +814,6 @@ struct SettingsView: View {
                 .buttonStyle(.plain)
                 .sensoryFeedback(.success, trigger: store.saveConfirmation)
             }
-        }
-    }
-
-    @ViewBuilder
-    private var connectionStatusBar: some View {
-        let isError = connectionManager.connectionState == .error
-        DSCard(glow: syncStateColor) {
-            HStack(spacing: DS.Spacing.sm) {
-                Circle()
-                    .fill(syncStateColor)
-                    .frame(width: 10, height: 10)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(syncStateLabel)
-                        .font(.caption.weight(.semibold))
-                    if let date = connectionManager.lastSyncDate {
-                        Text("Last sync: \(date, style: .relative) ago")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                Spacer()
-
-                if connectionManager.connectionState == .syncing {
-                    ProgressView().controlSize(.small)
-                }
-
-                if connectionManager.connectionState == .error || connectionManager.connectionState == .disconnected {
-                    Button {
-                        Task {
-                            await connectionManager.tryConnect(store: store)
-                            if connectionManager.connectionState == .connected {
-                                toastManager?.show(.success, message: "Connected to display")
-                            }
-                        }
-                    } label: {
-                        Label("Reconnect", systemImage: "arrow.clockwise")
-                            .font(.caption.weight(.medium))
-                    }
-                    .buttonStyle(.bordered)
-                    .tint(.cyan)
-                    .controlSize(.small)
-                }
-            }
-        }
-        .focusRing(isActive: isError, color: .red)
-    }
-
-    private var syncStateColor: Color {
-        switch connectionManager.connectionState {
-        case .connected: return .green
-        case .syncing: return .cyan
-        case .searching: return .orange
-        case .error: return .red
-        case .disconnected: return .secondary
-        }
-    }
-
-    private var syncStateLabel: String {
-        switch connectionManager.connectionState {
-        case .connected: return "Connected to Display"
-        case .syncing: return "Syncing..."
-        case .searching: return "Searching..."
-        case .error: return connectionManager.lastError ?? "Connection Error"
-        case .disconnected: return "Not Connected"
         }
     }
 

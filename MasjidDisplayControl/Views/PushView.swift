@@ -80,65 +80,12 @@ struct PushView: View {
     }
 
     private var connectionCard: some View {
-        VStack(spacing: DS.Spacing.md) {
-            ZStack {
-                Circle()
-                    .fill(connectionGradient)
-                    .frame(width: 72, height: 72)
-                    .shadow(color: connectionAccentColor.opacity(0.4), radius: 20)
-
-                if connectionManager.connectionState == .searching {
-                    PulseRingView(color: .blue, isAnimating: true)
-                        .frame(width: 96, height: 96)
-                }
-
-                Image(systemName: connectionStateIcon)
-                    .font(.system(size: 28, weight: .medium))
-                    .foregroundStyle(.white)
-                    .symbolEffect(.bounce, value: connectionManager.connectionState == .connected)
-            }
-            .frame(height: 100)
-
-            VStack(spacing: 4) {
-                Text(connectionStateTitle)
-                    .font(.title3.weight(.bold))
-
-                Text(connectionStateSubtitle)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-
-            HStack(spacing: DS.Spacing.sm) {
-                if let nm = networkMonitor {
-                    statusPill(
-                        nm.isConnected ? nm.interfaceType : "Offline",
-                        icon: nm.isConnected ? "wifi" : "wifi.slash",
-                        isActive: nm.isConnected,
-                        color: nm.isConnected ? .cyan : .red
-                    )
-                }
-                statusPill(
-                    "Server",
-                    icon: connectionManager.connectionState == .connected ? "checkmark.circle.fill" : "xmark.circle",
-                    isActive: connectionManager.connectionState == .connected,
-                    color: connectionManager.connectionState == .connected ? .green : .secondary
-                )
-                if connectionManager.isPaired {
-                    statusPill("Paired", icon: "checkmark.seal.fill", isActive: true, color: .green)
-                }
-                if connectionManager.pendingCount > 0 {
-                    statusPill("\(connectionManager.pendingCount)", icon: "tray.full.fill", isActive: true, color: .orange)
-                        .accessibilityLabel("Queue: \(connectionManager.pendingCount)")
-                }
-                if let date = connectionManager.lastSyncDate {
-                    statusPill(date.formatted(.relative(presentation: .named)), icon: "clock", isActive: true, color: .blue)
-                }
-            }
-        }
-        .padding(DS.Spacing.lg)
-        .glassLayer(.window, glow: connectionAccentColor)
-        .elevation(.level3, color: connectionAccentColor)
+        StatusOrnamentBar(
+            connectionManager: connectionManager,
+            networkMonitor: networkMonitor,
+            toastManager: toastManager,
+            store: store
+        )
         .staggerAppear(visible: appearAnimation, index: 0)
     }
 
@@ -874,72 +821,6 @@ struct PushView: View {
                 .font(.caption.weight(.medium))
                 .foregroundStyle(.red)
                 .transition(.opacity)
-        }
-    }
-
-    private func statusPill(_ text: String, icon: String, isActive: Bool, color: Color) -> some View {
-        HStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.caption2.weight(.bold))
-            Text(text)
-                .font(.caption2.weight(.semibold))
-                .lineLimit(1)
-                .truncationMode(.tail)
-                .minimumScaleFactor(0.85)
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 5)
-        .frame(minWidth: 44)
-        .background(isActive ? color.opacity(0.15) : Color(.tertiarySystemGroupedBackground))
-        .foregroundStyle(isActive ? color : .secondary)
-        .clipShape(.capsule)
-    }
-
-    private var connectionGradient: some ShapeStyle {
-        LinearGradient(
-            colors: [connectionAccentColor, connectionAccentColor.opacity(0.7)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
-
-    private var connectionAccentColor: Color {
-        switch connectionManager.connectionState {
-        case .connected: return .green
-        case .syncing: return .blue
-        case .searching: return .orange
-        case .error: return .red
-        case .disconnected: return .secondary
-        }
-    }
-
-    private var connectionStateIcon: String {
-        switch connectionManager.connectionState {
-        case .connected: return "checkmark.circle.fill"
-        case .syncing: return "arrow.triangle.2.circlepath"
-        case .searching: return "magnifyingglass"
-        case .error: return "exclamationmark.triangle.fill"
-        case .disconnected: return "wifi.slash"
-        }
-    }
-
-    private var connectionStateTitle: String {
-        switch connectionManager.connectionState {
-        case .connected: return connectionManager.discoveredHost ?? "Connected"
-        case .syncing: return "Syncing..."
-        case .searching: return "Searching..."
-        case .error: return "Connection Error"
-        case .disconnected: return "Not Connected"
-        }
-    }
-
-    private var connectionStateSubtitle: String {
-        switch connectionManager.connectionState {
-        case .connected: return connectionManager.isPaired ? "Paired and ready to sync" : "Connected — tap Pair to complete setup"
-        case .syncing: return "Pushing changes to display..."
-        case .searching: return "Looking for display on network..."
-        case .error: return connectionManager.lastError ?? "Check your network connection"
-        case .disconnected: return "Tap Reconnect to connect to your display"
         }
     }
 

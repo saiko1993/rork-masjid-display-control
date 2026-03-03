@@ -442,7 +442,7 @@ struct ActionTileView: View {
         }
         .frame(maxWidth: .infinity)
         .frame(minHeight: 110)
-        .glassCard(cornerRadius: DS.Radius.xl)
+        .glassLayer(.card)
     }
 }
 

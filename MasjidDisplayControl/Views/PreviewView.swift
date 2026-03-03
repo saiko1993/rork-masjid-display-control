@@ -258,41 +258,7 @@ struct PreviewView: View {
                             .foregroundStyle(.secondary)
                     }
                 } else {
-                    VStack(spacing: 20) {
-                        Image(systemName: "tv.slash")
-                            .font(.system(size: 48, weight: .light))
-                            .foregroundStyle(.secondary)
-
-                        Text("Display Not Reachable")
-                            .font(.title3.weight(.semibold))
-                            .foregroundStyle(.white)
-
-                        Text("Cannot reach \(store.pushTarget.baseUrl)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-
-                        HStack(spacing: 12) {
-                            Button {
-                                checkServerReachability()
-                            } label: {
-                                Label("Retry", systemImage: "arrow.clockwise")
-                                    .font(.subheadline.weight(.medium))
-                            }
-                            .buttonStyle(.borderedProminent)
-                            .tint(.cyan)
-
-                            Button {
-                                withAnimation { previewMode = .nativeRenderer }
-                            } label: {
-                                Label("Use Native Renderer", systemImage: "tv")
-                                    .font(.subheadline.weight(.medium))
-                            }
-                            .buttonStyle(.bordered)
-                            .tint(.white)
-                        }
-                    }
-                    .padding()
+                    nativeOfflineFallback
                 }
 
                 demoBadge(in: geo)
@@ -418,6 +384,57 @@ struct PreviewView: View {
             Text("\(label): \(value)")
                 .font(.system(size: 9, design: .monospaced))
                 .foregroundStyle(.white)
+        }
+    }
+
+    private var nativeOfflineFallback: some View {
+        let preset = ScreenPreset.presets.first { $0.id == selectedPresetId } ?? ScreenPreset.presets[0]
+        let tw = CGFloat(preset.width)
+        let th = CGFloat(preset.height)
+
+        return GeometryReader { geo in
+            let aspect = tw / th
+            let availW = geo.size.width - 16
+            let availH = geo.size.height - 16
+            let fitW = min(availW, availH * aspect)
+            let fitH = fitW / aspect
+            let scale = fitW / tw
+
+            ZStack {
+                Color.black
+
+                DisplayRendererView(
+                    store: store,
+                    theme: store.currentTheme,
+                    screenWidth: tw,
+                    screenHeight: th,
+                    now: effectiveTime
+                )
+                .frame(width: tw, height: th)
+                .scaleEffect(scale, anchor: .center)
+                .frame(width: fitW, height: fitH)
+
+                VStack {
+                    Spacer()
+                    HStack(spacing: DS.Spacing.sm) {
+                        Button {
+                            checkServerReachability()
+                        } label: {
+                            Label("Retry Server", systemImage: "arrow.clockwise")
+                                .font(.caption.weight(.semibold))
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.cyan)
+                        .controlSize(.small)
+                    }
+                    .padding(DS.Spacing.sm)
+                }
+                .frame(width: fitW, height: fitH)
+            }
+            .frame(width: fitW, height: fitH)
+            .clipShape(.rect(cornerRadius: 8))
+            .shadow(color: store.currentTheme.palette.accent.opacity(0.15), radius: 20, y: 0)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 
