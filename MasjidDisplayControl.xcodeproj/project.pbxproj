@@ -150,12 +150,10 @@
 				105FC5762E9EAD3100EA8BCF /* Sources */,
 				105FC5772E9EAD3100EA8BCF /* Frameworks */,
 				105FC5782E9EAD3100EA8BCF /* Resources */,
-				XXBD45FAA12FB24A6888F3XX /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				XXFFC36DD5CF460DA2E6A4XX /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				105FC57C2E9EAD3100EA8BCF /* MasjidDisplayControl */,
