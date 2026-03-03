@@ -3,6 +3,7 @@
 
   var prevNextPrayer = null;
   var prevTickerText = '';
+  var lastTickTime = 0;
 
   function highlightNextPrayer() {
     var rows = document.querySelectorAll('.prayer-row, [data-prayer]');
@@ -44,6 +45,15 @@
     } else if (phase === 'iqama_countdown' || phase === 'iqama') {
       badge.classList.add('iqama-active');
     }
+    return phase;
+  }
+
+  function applyTickerPause(phase) {
+    var tickerText = document.querySelector('.ticker-text, .ticker > span');
+    if (!tickerText) return;
+    var shouldPause = phase === 'adhan_active' || phase === 'adhan' ||
+                      phase === 'iqama_countdown' || phase === 'iqama';
+    tickerText.style.animationPlayState = shouldPause ? 'paused' : 'running';
   }
 
   function watchTicker() {
@@ -62,17 +72,26 @@
 
   function tick() {
     highlightNextPrayer();
-    highlightPhaseBadge();
+    var phase = highlightPhaseBadge();
+    applyTickerPause(phase || '');
     watchTicker();
+  }
+
+  function loop(ts) {
+    if (ts - lastTickTime >= 1000) {
+      lastTickTime = ts;
+      tick();
+    }
+    requestAnimationFrame(loop);
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
-      setInterval(tick, 1000);
       tick();
+      requestAnimationFrame(loop);
     });
   } else {
-    setInterval(tick, 1000);
     tick();
+    requestAnimationFrame(loop);
   }
 })();
