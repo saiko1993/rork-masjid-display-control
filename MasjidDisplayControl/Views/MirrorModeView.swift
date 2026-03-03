@@ -65,27 +65,33 @@ struct MirrorModeView: View {
                     .padding(16)
                 }
                 Spacer()
-                HStack {
-                    Button {
-                        refreshTrigger += 1
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.caption.weight(.semibold))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(.ultraThinMaterial)
-                            .clipShape(.capsule)
+                OrnamentContainer {
+                    HStack(spacing: DS.Spacing.md) {
+                        Button {
+                            refreshTrigger += 1
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "arrow.clockwise")
+                                    .font(.system(size: 14, weight: .semibold))
+                                Text("Refresh")
+                                    .font(.caption.weight(.semibold))
+                            }
+                            .foregroundStyle(.white.opacity(0.85))
+                        }
+                        .buttonStyle(PressEffectStyle())
+
+                        Spacer()
+
+                        HStack(spacing: 6) {
+                            Circle()
+                                .fill(serverReachable ? .green : .red)
+                                .frame(width: 7, height: 7)
+                            Text("MIRROR")
+                                .font(.caption2.weight(.bold))
+                                .foregroundStyle(.white.opacity(0.6))
+                        }
                     }
-                    Spacer()
-                    Text("MIRROR")
-                        .font(.caption2.weight(.bold))
-                        .foregroundStyle(.white.opacity(0.5))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(.black.opacity(0.3))
-                        .clipShape(.capsule)
                 }
-                .padding(16)
             }
         }
         .persistentSystemOverlays(.hidden)

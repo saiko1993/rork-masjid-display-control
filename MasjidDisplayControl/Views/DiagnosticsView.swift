@@ -145,6 +145,7 @@ struct DiagnosticsView: View {
                     .buttonStyle(.bordered)
                     .tint(.orange)
                     .controlSize(.small)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .padding(DS.Spacing.md)
                 .glassLayer(.card, glow: .orange)

@@ -294,7 +294,13 @@ struct HomeView: View {
     private var primaryActionsRow: some View {
         if let cm = connectionManager, let bm = bleManager {
             HStack(spacing: DS.Spacing.sm) {
-                Button {
+                DSActionTileButton(
+                    icon: "paintpalette.fill",
+                    title: isSendingTheme ? "Sending..." : "Send Theme",
+                    tint: .orange,
+                    isLoading: isSendingTheme,
+                    isDisabled: cm.connectionState != .connected
+                ) {
                     isSendingTheme = true
                     toastManager?.show(.syncing, message: "Sending theme pack...")
                     Task {
@@ -306,26 +312,15 @@ struct HomeView: View {
                             toastManager?.show(.error, message: cm.lastError ?? "Failed to send theme")
                         }
                     }
-                } label: {
-                    VStack(spacing: 6) {
-                        if isSendingTheme {
-                            ProgressView().controlSize(.small)
-                                .frame(height: 22)
-                        } else {
-                            Image(systemName: "paintpalette.fill")
-                                .font(.system(size: 22))
-                        }
-                        Text("Send Theme")
-                            .font(.caption2.weight(.semibold))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 72)
                 }
-                .buttonStyle(.bordered)
-                .tint(.orange)
-                .disabled(cm.connectionState != .connected || isSendingTheme)
 
-                Button {
+                DSActionTileButton(
+                    icon: "arrow.triangle.2.circlepath",
+                    title: isSendingSync ? "Syncing..." : "Light Sync",
+                    tint: .cyan,
+                    isLoading: isSendingSync,
+                    isDisabled: cm.connectionState != .connected
+                ) {
                     isSendingSync = true
                     toastManager?.show(.syncing, message: "Syncing...")
                     Task {
@@ -337,42 +332,17 @@ struct HomeView: View {
                             toastManager?.show(.error, message: cm.lastError ?? "Sync failed")
                         }
                     }
-                } label: {
-                    VStack(spacing: 6) {
-                        if isSendingSync {
-                            ProgressView().controlSize(.small)
-                                .frame(height: 22)
-                        } else {
-                            Image(systemName: "arrow.triangle.2.circlepath")
-                                .font(.system(size: 22))
-                        }
-                        Text("Light Sync")
-                            .font(.caption2.weight(.semibold))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 72)
                 }
-                .buttonStyle(.bordered)
-                .tint(.cyan)
-                .disabled(cm.connectionState != .connected || isSendingSync)
 
-                Button {
+                DSActionTileButton(
+                    icon: store.saveConfirmation ? "checkmark.circle.fill" : "square.and.arrow.down.fill",
+                    title: store.saveConfirmation ? "Saved!" : "Save All",
+                    tint: store.saveConfirmation ? .green : .cyan
+                ) {
                     store.save()
                     cm.scheduleLightSync(store: store, bleManager: bm)
                     toastManager?.show(.success, message: "Settings saved")
-                } label: {
-                    VStack(spacing: 6) {
-                        Image(systemName: store.saveConfirmation ? "checkmark.circle.fill" : "square.and.arrow.down.fill")
-                            .font(.system(size: 22))
-                            .foregroundStyle(store.saveConfirmation ? .green : .cyan)
-                        Text(store.saveConfirmation ? "Saved!" : "Save All")
-                            .font(.caption2.weight(.semibold))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 72)
                 }
-                .buttonStyle(.bordered)
-                .tint(store.saveConfirmation ? .green : .cyan)
                 .sensoryFeedback(.success, trigger: store.saveConfirmation)
             }
         }

@@ -144,7 +144,14 @@ struct PushView: View {
     private var primaryActionsSection: some View {
         VStack(spacing: DS.Spacing.sm) {
             HStack(spacing: DS.Spacing.sm) {
-                Button {
+                DSActionTileButton(
+                    icon: "arrow.clockwise.circle.fill",
+                    title: isReconnecting ? "Connecting..." : "Reconnect",
+                    tint: .blue,
+                    isLoading: isReconnecting,
+                    isDisabled: connectionManager.connectionState == .searching,
+                    height: 90
+                ) {
                     isReconnecting = true
                     Task {
                         await connectionManager.reconnect(store: store)
@@ -155,26 +162,16 @@ struct PushView: View {
                             toastManager?.show(.error, message: connectionManager.lastError ?? "Connection failed")
                         }
                     }
-                } label: {
-                    VStack(spacing: 8) {
-                        if isReconnecting {
-                            ProgressView().controlSize(.regular)
-                                .frame(height: 28)
-                        } else {
-                            Image(systemName: "arrow.clockwise.circle.fill")
-                                .font(.system(size: 28))
-                        }
-                        Text(isReconnecting ? "Connecting..." : "Reconnect")
-                            .font(.subheadline.weight(.semibold))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 90)
                 }
-                .buttonStyle(.bordered)
-                .tint(.blue)
-                .disabled(connectionManager.connectionState == .searching || isReconnecting)
+                .focusRing(isActive: connectionManager.connectionState == .disconnected || connectionManager.connectionState == .error, color: .blue)
 
-                Button {
+                DSActionTileButton(
+                    icon: showPairSuccess ? "checkmark.circle.fill" : "link.badge.plus",
+                    title: showPairSuccess ? "Paired!" : "Pair",
+                    tint: showPairSuccess ? .green : .indigo,
+                    isLoading: pairingInProgress,
+                    height: 90
+                ) {
                     pairingInProgress = true
                     toastManager?.show(.syncing, message: "Pairing with display...")
                     Task {
@@ -189,25 +186,19 @@ struct PushView: View {
                             toastManager?.show(.error, message: connectionManager.lastError ?? "Pairing failed")
                         }
                     }
-                } label: {
-                    VStack(spacing: 8) {
-                        Image(systemName: showPairSuccess ? "checkmark.circle.fill" : "link.badge.plus")
-                            .font(.system(size: 28))
-                            .foregroundStyle(showPairSuccess ? .green : .white)
-                        Text(showPairSuccess ? "Paired!" : "Pair")
-                            .font(.subheadline.weight(.semibold))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 90)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(showPairSuccess ? .green : .indigo)
-                .disabled(pairingInProgress)
                 .sensoryFeedback(.success, trigger: showPairSuccess)
             }
 
             HStack(spacing: DS.Spacing.sm) {
-                Button {
+                DSActionTileButton(
+                    icon: "paintpalette.fill",
+                    title: isSendingTheme ? "Sending..." : "Send Theme",
+                    tint: .orange,
+                    isLoading: isSendingTheme,
+                    isDisabled: connectionManager.connectionState != .connected,
+                    height: 80
+                ) {
                     isSendingTheme = true
                     toastManager?.show(.syncing, message: "Sending theme pack...")
                     Task {
@@ -219,26 +210,16 @@ struct PushView: View {
                             toastManager?.show(.error, message: connectionManager.lastError ?? "Theme send failed")
                         }
                     }
-                } label: {
-                    VStack(spacing: 8) {
-                        if isSendingTheme {
-                            ProgressView().controlSize(.small)
-                                .frame(height: 24)
-                        } else {
-                            Image(systemName: "paintpalette.fill")
-                                .font(.system(size: 24))
-                        }
-                        Text(isSendingTheme ? "Sending..." : "Send Theme")
-                            .font(.caption.weight(.semibold))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 80)
                 }
-                .buttonStyle(.bordered)
-                .tint(.orange)
-                .disabled(connectionManager.connectionState != .connected || isSendingTheme)
 
-                Button {
+                DSActionTileButton(
+                    icon: "arrow.triangle.2.circlepath",
+                    title: isSendingSync ? "Syncing..." : "Light Sync",
+                    tint: .cyan,
+                    isLoading: isSendingSync,
+                    isDisabled: connectionManager.connectionState != .connected,
+                    height: 80
+                ) {
                     isSendingSync = true
                     toastManager?.show(.syncing, message: "Syncing...")
                     Task {
@@ -250,42 +231,18 @@ struct PushView: View {
                             toastManager?.show(.error, message: connectionManager.lastError ?? "Sync failed")
                         }
                     }
-                } label: {
-                    VStack(spacing: 8) {
-                        if isSendingSync {
-                            ProgressView().controlSize(.small)
-                                .frame(height: 24)
-                        } else {
-                            Image(systemName: "arrow.triangle.2.circlepath")
-                                .font(.system(size: 24))
-                        }
-                        Text(isSendingSync ? "Syncing..." : "Light Sync")
-                            .font(.caption.weight(.semibold))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 80)
                 }
-                .buttonStyle(.bordered)
-                .tint(.cyan)
-                .disabled(connectionManager.connectionState != .connected || isSendingSync)
 
-                Button {
+                DSActionTileButton(
+                    icon: store.saveConfirmation ? "checkmark.circle.fill" : "square.and.arrow.down.fill",
+                    title: store.saveConfirmation ? "Saved!" : "Save",
+                    tint: store.saveConfirmation ? .green : .blue,
+                    height: 80
+                ) {
                     store.save()
                     connectionManager.scheduleLightSync(store: store, bleManager: bleManager)
                     toastManager?.show(.success, message: "Settings saved")
-                } label: {
-                    VStack(spacing: 8) {
-                        Image(systemName: store.saveConfirmation ? "checkmark.circle.fill" : "square.and.arrow.down.fill")
-                            .font(.system(size: 24))
-                            .foregroundStyle(store.saveConfirmation ? .green : .blue)
-                        Text(store.saveConfirmation ? "Saved!" : "Save")
-                            .font(.caption.weight(.semibold))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 80)
                 }
-                .buttonStyle(.bordered)
-                .tint(store.saveConfirmation ? .green : .blue)
                 .sensoryFeedback(.success, trigger: store.saveConfirmation)
             }
 

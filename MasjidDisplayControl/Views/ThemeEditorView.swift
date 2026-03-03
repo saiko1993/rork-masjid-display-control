@@ -276,21 +276,23 @@ struct ThemeEditorView: View {
     private var actionsSection: some View {
         VStack(spacing: DS.Spacing.sm) {
             if override.hasOverrides {
-                Button {
-                    withAnimation {
+                DSButton(
+                    "Reset to Default",
+                    icon: "arrow.counterclockwise",
+                    variant: .destructive
+                ) {
+                    withAnimation(DSAnimation.softEase) {
                         store.themeCustomizations.resetOverride(for: themeId)
                         store.save()
                     }
-                } label: {
-                    Label("Reset to Default", systemImage: "arrow.counterclockwise")
-                        .font(.subheadline.weight(.medium))
-                        .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.bordered)
-                .tint(.red)
             }
 
-            Button {
+            DSButton(
+                isPushing ? "Pushing..." : "Save & Push to Display",
+                icon: isPushing ? nil : "arrow.up.circle.fill",
+                isLoading: isPushing
+            ) {
                 if store.selectedTheme != themeId {
                     store.selectedTheme = themeId
                 }
@@ -306,20 +308,9 @@ struct ThemeEditorView: View {
                         toastManager?.show(.info, message: "Theme saved locally")
                     }
                 }
-            } label: {
-                HStack(spacing: 8) {
-                    if isPushing {
-                        ProgressView().controlSize(.small).tint(.white)
-                    }
-                    Label(isPushing ? "Pushing..." : "Save & Push to Display", systemImage: "arrow.up.circle.fill")
-                }
-                .font(.headline)
-                .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .disabled(isPushing)
             .sensoryFeedback(.impact(flexibility: .soft), trigger: store.saveConfirmation)
+            .focusRing(isActive: !isPushing, color: .blue)
         }
     }
 

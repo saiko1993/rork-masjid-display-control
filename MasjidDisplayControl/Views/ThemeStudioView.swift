@@ -466,48 +466,40 @@ struct ThemeStudioView: View {
     // MARK: - Bottom Actions
 
     private var bottomActions: some View {
-        VStack(spacing: DS.Spacing.xs) {
-            Divider()
+        DSBottomBar {
             HStack(spacing: DS.Spacing.sm) {
                 if override.hasOverrides {
                     Button {
-                        withAnimation {
+                        withAnimation(DSAnimation.softEase) {
                             store.themeCustomizations.resetOverride(for: themeId)
                             store.save()
                         }
                     } label: {
                         Image(systemName: "arrow.counterclockwise")
-                            .font(.headline)
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(.red)
                             .frame(width: 52, height: 52)
+                            .background(.red.opacity(0.1))
+                            .clipShape(.rect(cornerRadius: DS.Radius.md, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: DS.Radius.md, style: .continuous)
+                                    .strokeBorder(.red.opacity(0.2), lineWidth: 0.5)
+                            )
                     }
-                    .buttonStyle(.bordered)
-                    .tint(.red)
+                    .buttonStyle(PressEffectStyle())
                 }
 
-                Button {
+                DSButton(
+                    pushSucceeded ? "Pushed!" : "Save & Push to Display",
+                    icon: pushSucceeded ? "checkmark.circle.fill" : "arrow.up.circle.fill",
+                    variant: pushSucceeded ? .secondary : .primary,
+                    isLoading: pushInProgress
+                ) {
                     pushTheme()
-                } label: {
-                    HStack(spacing: 8) {
-                        if pushInProgress {
-                            ProgressView().controlSize(.small).tint(.white)
-                        } else {
-                            Image(systemName: pushSucceeded ? "checkmark.circle.fill" : "arrow.up.circle.fill")
-                        }
-                        Text(pushSucceeded ? "Pushed!" : "Save & Push to Display")
-                            .font(.headline)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 52)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(pushSucceeded ? .green : .blue)
-                .disabled(pushInProgress)
                 .sensoryFeedback(.impact(flexibility: .soft), trigger: pushSucceeded)
             }
-            .padding(.horizontal, DS.Spacing.md)
-            .padding(.bottom, DS.Spacing.xs)
         }
-        .background(.ultraThinMaterial)
     }
 
     // MARK: - Helpers
