@@ -309,9 +309,13 @@ struct StatusChip: View {
             }
             Text(text)
                 .font(.caption.weight(.semibold))
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .minimumScaleFactor(0.85)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
+        .frame(minWidth: 44)
         .background(color.opacity(0.15))
         .foregroundStyle(color)
         .clipShape(.capsule)
