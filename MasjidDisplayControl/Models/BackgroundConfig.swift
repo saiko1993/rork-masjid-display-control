@@ -1,5 +1,4 @@
 import SwiftUI
-import CryptoKit
 
 nonisolated enum BackgroundType: String, Codable, CaseIterable, Sendable {
     case solid = "solid"
@@ -226,9 +225,6 @@ nonisolated struct BackgroundAsset: Codable, Sendable, Identifiable, Equatable {
         try container.encode(createdAt, forKey: .createdAt)
     }
 
-    var exportableId: String {
-        id
-    }
 }
 
 nonisolated struct BackgroundConfig: Codable, Sendable, Equatable {
@@ -300,10 +296,6 @@ nonisolated struct BackgroundConfig: Codable, Sendable, Equatable {
     var activeBackground: BackgroundAsset? {
         guard let id = activeBackgroundId else { return nil }
         return gallery.first { $0.id == id }
-    }
-
-    var effectiveBlurRadius: CGFloat {
-        blurRadius
     }
 
     mutating func applyIntensity(_ level: BackgroundIntensity) {

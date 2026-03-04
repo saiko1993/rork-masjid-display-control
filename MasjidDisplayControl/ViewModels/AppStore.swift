@@ -118,12 +118,6 @@ class AppStore {
         save()
     }
 
-    func duplicateThemeOverride(from sourceId: ThemeId, to targetId: ThemeId) {
-        let source = themeCustomizations.override(for: sourceId)
-        themeCustomizations.setOverride(source, for: targetId)
-        save()
-    }
-
     func save() {
         saveTask?.cancel()
         saveTask = Task {

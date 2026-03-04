@@ -147,10 +147,3 @@ extension View {
     }
 }
 
-struct ToastOverlay: View {
-    let toast: ToastItem?
-
-    var body: some View {
-        EmptyView()
-    }
-}

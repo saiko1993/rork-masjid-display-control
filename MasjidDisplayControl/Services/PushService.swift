@@ -86,18 +86,6 @@ class PushService {
         queueLength = 0
     }
 
-    func pairDevice(store: AppStore, bleManager: BLEManager) async {
-        isSending = true
-        queueLength = 2
-        await sendThemePack(store: store, bleManager: bleManager)
-        if lastEntry?.status == .success {
-            queueLength = 1
-            await sendLightSync(store: store, bleManager: bleManager)
-        }
-        isSending = false
-        queueLength = 0
-    }
-
     func testConnection(store: AppStore, bleManager: BLEManager) async -> (Bool, String) {
         let transport = resolveTransport(mode: store.pushTarget.transportMode, bleManager: bleManager)
         let config = TransportConfig(from: store.pushTarget)

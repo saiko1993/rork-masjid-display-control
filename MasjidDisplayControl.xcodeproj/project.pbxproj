@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		XX07F9591D65AAE9A73253XX /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = XXFB5A73B0A0BD3E9DE405XX /* Lottie */; };
 		XX7C19D9FC5D10C86B8961XX /* MasjidWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = XXD1F828F2356AFBA440DBXX /* MasjidWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		XX8DD8B471784045F9341EXX /* PopupView in Frameworks */ = {isa = PBXBuildFile; productRef = XX30910CBE3632DF5AD9A7XX /* PopupView */; };
 		XX9211A1CC7D39B9D31036XX /* SwiftUIX in Frameworks */ = {isa = PBXBuildFile; productRef = XXEE1086A865BDC092DA12XX /* SwiftUIX */; };
@@ -88,7 +87,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				XX9211A1CC7D39B9D31036XX /* SwiftUIX in Frameworks */,
-				XX07F9591D65AAE9A73253XX /* Lottie in Frameworks */,
 				XX8DD8B471784045F9341EXX /* PopupView in Frameworks */,
 				XXA78FEC76C37ECAC6834FXX /* SDWebImageSwiftUI in Frameworks */,
 			);
@@ -161,7 +159,6 @@
 			name = MasjidDisplayControl;
 			packageProductDependencies = (
 				XXEE1086A865BDC092DA12XX /* SwiftUIX */,
-				XXFB5A73B0A0BD3E9DE405XX /* Lottie */,
 				XX30910CBE3632DF5AD9A7XX /* PopupView */,
 				XXCF8CEA2B8D311185D21BXX /* SDWebImageSwiftUI */,
 			);
@@ -279,7 +276,6 @@
 			);
 			packageReferences = (
 				XX3E55BFB85AF350125DE4XX /* XCRemoteSwiftPackageReference "SwiftUIX" */,
-				XXCF86FCF3835EEA34DD78XX /* XCRemoteSwiftPackageReference "lottie-spm" */,
 				XXAEB02B4ADB1B960B0534XX /* XCRemoteSwiftPackageReference "PopupView" */,
 				XXAC6652B0D5C81BDFF265XX /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
 			);
@@ -777,14 +773,6 @@
 				minimumVersion = 4.0.0;
 			};
 		};
-		XXCF86FCF3835EEA34DD78XX /* XCRemoteSwiftPackageReference "lottie-spm" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/airbnb/lottie-spm.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.6.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -802,11 +790,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = XX3E55BFB85AF350125DE4XX /* XCRemoteSwiftPackageReference "SwiftUIX" */;
 			productName = SwiftUIX;
-		};
-		XXFB5A73B0A0BD3E9DE405XX /* Lottie */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = XXCF86FCF3835EEA34DD78XX /* XCRemoteSwiftPackageReference "lottie-spm" */;
-			productName = Lottie;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

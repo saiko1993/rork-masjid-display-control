@@ -31,23 +31,10 @@ struct SecureStorageService {
         return String(data: data, encoding: .utf8)
     }
 
-    static func delete(key: String) {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: serviceName,
-            kSecAttrAccount as String: key
-        ]
-        SecItemDelete(query as CFDictionary)
-    }
-
     static func saveCredentials(baseUrl: String, apiKey: String, hmacSecret: String) {
         save(key: "baseUrl", value: baseUrl)
         save(key: "apiKey", value: apiKey)
         save(key: "hmacSecret", value: hmacSecret)
-    }
-
-    static func loadCredentials() -> (baseUrl: String?, apiKey: String?, hmacSecret: String?) {
-        (load(key: "baseUrl"), load(key: "apiKey"), load(key: "hmacSecret"))
     }
 
     static func savePairingState(isPaired: Bool, deviceId: String?, lastServerIP: String?) {

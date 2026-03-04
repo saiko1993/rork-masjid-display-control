@@ -107,15 +107,6 @@ class BLEManager: NSObject {
         centralManager?.connect(device.peripheral, options: nil)
     }
 
-    func connectToPeripheral(_ peripheral: CBPeripheral) {
-        stopScanning()
-        connectionState = .connecting
-        connectedPeripheral = peripheral
-        connectedDeviceName = peripheral.name ?? "Unknown"
-        peripheral.delegate = self
-        centralManager?.connect(peripheral, options: nil)
-    }
-
     func disconnect() {
         if let peripheral = connectedPeripheral {
             centralManager?.cancelPeripheralConnection(peripheral)

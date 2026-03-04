@@ -1,6 +1,5 @@
 import SwiftUI
 import PhotosUI
-import AVFoundation
 import CryptoKit
 
 @Observable
@@ -418,11 +417,6 @@ class BackgroundManager {
         return nil
     }
 
-    func clearThumbnailCache() {
-        thumbnailCache.removeAll()
-        thumbnailAccessOrder.removeAll()
-    }
-
     func deleteAsset(_ asset: BackgroundAsset) {
         guard !asset.isStock else { return }
         if let fileName = asset.localFileName {
@@ -441,16 +435,6 @@ class BackgroundManager {
         if fileManager.fileExists(atPath: url.path) { return url }
         let legacyURL = legacyBackgroundsDirectory.appendingPathComponent(fileName)
         return fileManager.fileExists(atPath: legacyURL.path) ? legacyURL : nil
-    }
-
-    func assetExists(_ asset: BackgroundAsset) -> Bool {
-        if asset.isStock { return true }
-        if asset.sourceURL != nil { return true }
-        if let localFile = asset.localFileName {
-            if localFile.hasPrefix("bundle://") { return true }
-            return fileManager.fileExists(atPath: rootDirectory.appendingPathComponent(localFile).path)
-        }
-        return false
     }
 
     private var legacyBackgroundsDirectory: URL {

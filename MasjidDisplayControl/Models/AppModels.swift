@@ -1,4 +1,4 @@
-import SwiftUI
+import Foundation
 
 nonisolated enum AppLanguage: String, Codable, CaseIterable, Sendable {
     case ar = "ar"
@@ -293,10 +293,6 @@ nonisolated struct IqamaConfig: Codable, Sendable, Equatable {
         iqamaMode ?? (mode == "fixedTime" ? .fixedTime : .afterAdhan)
     }
 
-    mutating func normalizeMode() {
-        iqamaMode = effectiveMode
-        mode = effectiveMode.rawValue
-    }
 }
 
 nonisolated struct PrayerMinutes: Codable, Sendable, Equatable {

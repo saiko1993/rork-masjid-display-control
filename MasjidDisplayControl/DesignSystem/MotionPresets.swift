@@ -34,17 +34,6 @@ struct SoftPressStyle: ButtonStyle {
     }
 }
 
-struct BounceButtonStyle: ButtonStyle {
-    var tint: Color = DSTokens.Palette.accent
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.93 : 1.0)
-            .brightness(configuration.isPressed ? -0.05 : 0)
-            .animation(.spring(duration: 0.15, bounce: 0.5), value: configuration.isPressed)
-    }
-}
-
 struct FocusPulseModifier: ViewModifier {
     let isActive: Bool
     let color: Color

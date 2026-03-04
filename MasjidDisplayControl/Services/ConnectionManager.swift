@@ -558,9 +558,6 @@ class ConnectionManager {
         pendingCount = pendingChanges.count
     }
 
-    func clearPersistedQueue() {
-        UserDefaults.standard.removeObject(forKey: "cm_pendingQueue")
-    }
 }
 
 nonisolated struct PersistedPendingChange: Codable, Sendable {
