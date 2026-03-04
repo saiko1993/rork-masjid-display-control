@@ -18,6 +18,7 @@ struct BackgroundGalleryView: View {
             VStack(spacing: DSTokens.Grid.sectionSpacing) {
                 enableToggleSection
                 if store.backgroundConfig.enabled {
+                    intensitySection
                     backgroundTypeSection
                     activePreviewSection
                     galleryGrid
@@ -39,7 +40,7 @@ struct BackgroundGalleryView: View {
                 if let asset = await backgroundManager.saveImageFromPhotoPicker(item: item, name: "Custom Photo") {
                     store.backgroundConfig.addAsset(asset)
                     store.backgroundConfig.activeBackgroundId = asset.id
-                    store.backgroundConfig.backgroundType = .image
+                    store.backgroundConfig.backgroundType = .photo
                     backgroundManager.loadImage(for: asset)
                     store.save()
                     toastManager?.show(.success, message: "Photo added")
@@ -52,7 +53,7 @@ struct BackgroundGalleryView: View {
         }
         .onAppear {
             backgroundManager.ensureStockAssets(in: &store.backgroundConfig)
-            if let active = store.backgroundConfig.activeBackground, active.type == .image {
+            if let active = store.backgroundConfig.activeBackground, active.type == .photo {
                 backgroundManager.loadImage(for: active)
             }
         }
@@ -85,6 +86,50 @@ struct BackgroundGalleryView: View {
                     .onChange(of: store.backgroundConfig.enabled) { _, _ in
                         store.save()
                     }
+            }
+        }
+    }
+
+    private var intensitySection: some View {
+        DSSection("Intensity", icon: "dial.low.fill", color: DSTokens.Palette.warmAmber) {
+            HStack(spacing: DSTokens.Grid.chipSpacing) {
+                ForEach(BackgroundIntensity.allCases, id: \.self) { level in
+                    Button {
+                        withAnimation(.spring(duration: 0.3)) {
+                            store.backgroundConfig.applyIntensity(level)
+                            store.save()
+                        }
+                    } label: {
+                        VStack(spacing: 6) {
+                            Image(systemName: level.icon)
+                                .font(.system(size: 18))
+                            Text(level.displayName)
+                                .font(.caption.weight(.semibold))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(
+                            store.backgroundConfig.intensity == level
+                                ? AnyShapeStyle(DSTokens.Palette.warmAmber.opacity(0.2))
+                                : AnyShapeStyle(.ultraThinMaterial)
+                        )
+                        .foregroundStyle(
+                            store.backgroundConfig.intensity == level
+                                ? DSTokens.Palette.warmAmber
+                                : .secondary
+                        )
+                        .clipShape(.rect(cornerRadius: DS.Radius.md))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: DS.Radius.md)
+                                .strokeBorder(
+                                    store.backgroundConfig.intensity == level
+                                        ? DSTokens.Palette.warmAmber.opacity(0.3)
+                                        : .clear,
+                                    lineWidth: 0.5
+                                )
+                        )
+                    }
+                }
             }
         }
     }
@@ -146,14 +191,19 @@ struct BackgroundGalleryView: View {
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.secondary)
                         Spacer()
-                        if active.isStock {
-                            Text("STOCK")
-                                .font(.caption2.weight(.bold))
-                                .foregroundStyle(DSTokens.Palette.accent)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 3)
-                                .background(DSTokens.Palette.accent.opacity(0.15))
-                                .clipShape(.capsule)
+                        HStack(spacing: 4) {
+                            if active.isStock {
+                                Text("STOCK")
+                                    .font(.caption2.weight(.bold))
+                                    .foregroundStyle(DSTokens.Palette.accent)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(DSTokens.Palette.accent.opacity(0.15))
+                                    .clipShape(.capsule)
+                            }
+                            Text(active.source.rawValue.uppercased())
+                                .font(.system(size: 8, weight: .bold, design: .monospaced))
+                                .foregroundStyle(.tertiary)
                         }
                     }
 
@@ -186,21 +236,23 @@ struct BackgroundGalleryView: View {
             HStack {
                 SectionHeader(title: "Gallery", icon: "photo.stack.fill", color: DSTokens.Palette.warmAmber)
                 Spacer()
-                Menu {
-                    Button {
-                        showPhotoPicker = true
+                if store.backgroundConfig.backgroundType == .photo {
+                    Menu {
+                        Button {
+                            showPhotoPicker = true
+                        } label: {
+                            Label("From Photo Library", systemImage: "photo.on.rectangle")
+                        }
+                        Button {
+                            showURLInput = true
+                        } label: {
+                            Label("From URL", systemImage: "link")
+                        }
                     } label: {
-                        Label("From Photo Library", systemImage: "photo.on.rectangle")
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title3)
+                            .foregroundStyle(DSTokens.Palette.accent)
                     }
-                    Button {
-                        showURLInput = true
-                    } label: {
-                        Label("From URL", systemImage: "link")
-                    }
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title3)
-                        .foregroundStyle(DSTokens.Palette.accent)
                 }
             }
 
@@ -241,7 +293,7 @@ struct BackgroundGalleryView: View {
             withAnimation(.spring(duration: 0.3)) {
                 store.backgroundConfig.activeBackgroundId = asset.id
                 store.backgroundConfig.backgroundType = asset.type
-                if asset.type == .image {
+                if asset.type == .photo {
                     backgroundManager.loadImage(for: asset)
                 }
                 store.save()
@@ -262,6 +314,7 @@ struct BackgroundGalleryView: View {
                         Button {
                             backgroundManager.deleteAsset(asset)
                             store.backgroundConfig.removeAsset(id: asset.id)
+                            store.backgroundConfig.ensureFallback()
                             store.save()
                         } label: {
                             Image(systemName: "trash")
@@ -291,8 +344,16 @@ struct BackgroundGalleryView: View {
     @ViewBuilder
     private func backgroundPreviewThumbnail(for asset: BackgroundAsset) -> some View {
         switch asset.type {
-        case .image:
-            if let urlString = asset.sourceURL, let url = URL(string: urlString) {
+        case .photo:
+            if let thumb = backgroundManager.loadThumbnail(for: asset) {
+                Color(.secondarySystemBackground)
+                    .overlay {
+                        Image(uiImage: thumb)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .allowsHitTesting(false)
+                    }
+            } else if let urlString = asset.sourceURL, let url = URL(string: urlString) {
                 Color(.secondarySystemBackground)
                     .overlay {
                         WebImage(url: url) { image in
@@ -329,9 +390,16 @@ struct BackgroundGalleryView: View {
         case .video:
             ZStack {
                 Color(red: 0.05, green: 0.05, blue: 0.12)
-                Image(systemName: "play.rectangle.fill")
-                    .font(.title2)
-                    .foregroundStyle(.white.opacity(0.4))
+                VStack(spacing: 6) {
+                    Image(systemName: "play.rectangle.fill")
+                        .font(.title2)
+                        .foregroundStyle(.white.opacity(0.4))
+                    if asset.isStock {
+                        Text("Stock")
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundStyle(.white.opacity(0.3))
+                    }
+                }
             }
         case .motion:
             ZStack {
@@ -371,7 +439,7 @@ struct BackgroundGalleryView: View {
     }
 
     private var settingsSection: some View {
-        DSSection("Background Settings", icon: "slider.horizontal.3", color: DSTokens.Palette.softSlate) {
+        DSSection("Fine Tuning", icon: "slider.horizontal.3", color: DSTokens.Palette.softSlate) {
             VStack(spacing: DS.Spacing.sm) {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
@@ -500,7 +568,7 @@ struct BackgroundGalleryView: View {
                         if let asset = await backgroundManager.saveImageFromURL(customURL, name: customName) {
                             store.backgroundConfig.addAsset(asset)
                             store.backgroundConfig.activeBackgroundId = asset.id
-                            store.backgroundConfig.backgroundType = .image
+                            store.backgroundConfig.backgroundType = .photo
                             backgroundManager.loadImage(for: asset)
                             store.save()
                             toastManager?.show(.success, message: "Image added from URL")

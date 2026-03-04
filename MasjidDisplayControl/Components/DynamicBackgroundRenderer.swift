@@ -8,8 +8,9 @@ struct DynamicBackgroundRenderer: View {
     let accentColor: Color
     var scrollOffset: CGFloat = 0
 
-    private var parallaxOffset: CGFloat {
-        scrollOffset * config.parallaxStrength
+    private var smoothParallax: CGFloat {
+        let raw = scrollOffset * config.parallaxStrength
+        return raw * 0.8
     }
 
     var body: some View {
@@ -30,7 +31,7 @@ struct DynamicBackgroundRenderer: View {
             Color.clear
         } else if let active = config.activeBackground {
             switch active.type {
-            case .image:
+            case .photo:
                 imageBackground(asset: active, size: size)
             case .gif:
                 gifBackground(asset: active, size: size)
@@ -52,8 +53,8 @@ struct DynamicBackgroundRenderer: View {
             Image(uiImage: loadedImage)
                 .resizable()
                 .aspectRatio(contentMode: .fill)
-                .frame(width: size.width, height: size.height + abs(parallaxOffset) * 2 + 40)
-                .offset(y: parallaxOffset)
+                .frame(width: size.width, height: size.height + abs(smoothParallax) * 2 + 40)
+                .offset(y: smoothParallax)
                 .clipped()
                 .allowsHitTesting(false)
         } else if let urlString = asset.sourceURL, let url = URL(string: urlString) {
@@ -64,8 +65,8 @@ struct DynamicBackgroundRenderer: View {
             } placeholder: {
                 Color(red: 0.04, green: 0.04, blue: 0.08)
             }
-            .frame(width: size.width, height: size.height + abs(parallaxOffset) * 2 + 40)
-            .offset(y: parallaxOffset)
+            .frame(width: size.width, height: size.height + abs(smoothParallax) * 2 + 40)
+            .offset(y: smoothParallax)
             .clipped()
             .allowsHitTesting(false)
         } else {
@@ -83,10 +84,12 @@ struct DynamicBackgroundRenderer: View {
             } placeholder: {
                 Color(red: 0.04, green: 0.04, blue: 0.08)
             }
-            .frame(width: size.width, height: size.height + abs(parallaxOffset) * 2 + 40)
-            .offset(y: parallaxOffset)
+            .frame(width: size.width, height: size.height + abs(smoothParallax) * 2 + 40)
+            .offset(y: smoothParallax)
             .clipped()
             .allowsHitTesting(false)
+        } else {
+            Color(red: 0.04, green: 0.04, blue: 0.08)
         }
     }
 
@@ -94,16 +97,29 @@ struct DynamicBackgroundRenderer: View {
     private func videoBackground(asset: BackgroundAsset, size: CGSize) -> some View {
         if let urlString = asset.sourceURL, let url = URL(string: urlString) {
             VideoBackgroundView(url: url)
-                .frame(width: size.width, height: size.height + abs(parallaxOffset) * 2 + 40)
-                .offset(y: parallaxOffset)
+                .frame(width: size.width, height: size.height + abs(smoothParallax) * 2 + 40)
+                .offset(y: smoothParallax)
                 .clipped()
                 .allowsHitTesting(false)
+        } else if let localFile = asset.localFileName {
+            let fileURL = backgroundManager.localFileURL(for: asset)
+            if let fileURL {
+                VideoBackgroundView(url: fileURL)
+                    .frame(width: size.width, height: size.height + abs(smoothParallax) * 2 + 40)
+                    .offset(y: smoothParallax)
+                    .clipped()
+                    .allowsHitTesting(false)
+            } else {
+                Color(red: 0.04, green: 0.04, blue: 0.08)
+            }
+        } else {
+            Color(red: 0.04, green: 0.04, blue: 0.08)
         }
     }
 
     @ViewBuilder
     private func motionBackground(preset: MotionPresetType, size: CGSize) -> some View {
-        MotionBackgroundView(preset: preset, size: size)
+        MotionBackgroundView(preset: preset, size: size, particleMultiplier: config.intensity.particleMultiplier)
             .allowsHitTesting(false)
     }
 
@@ -140,15 +156,16 @@ struct DynamicBackgroundRenderer: View {
 
     @ViewBuilder
     private func ambientLayer(size: CGSize) -> some View {
+        let multiplier = config.intensity.particleMultiplier
         switch config.ambientEffect {
         case .stars:
-            AmbientStarsView(size: size)
+            AmbientStarsView(size: size, particleMultiplier: multiplier)
                 .allowsHitTesting(false)
         case .crescentGlow:
             AmbientCrescentGlowView(accentColor: accentColor)
                 .allowsHitTesting(false)
         case .lanternParticles:
-            AmbientLanternView(size: size, accentColor: accentColor)
+            AmbientLanternView(size: size, accentColor: accentColor, particleMultiplier: multiplier)
                 .allowsHitTesting(false)
         case .none:
             EmptyView()
@@ -208,12 +225,16 @@ class VideoPlayerUIView: UIView {
         playerLayer?.frame = bounds
     }
 
-    @objc private func appDidBecomeActive() {
-        player?.play()
+    @objc nonisolated private func appDidBecomeActive() {
+        Task { @MainActor in
+            player?.play()
+        }
     }
 
-    @objc private func appWillResignActive() {
-        player?.pause()
+    @objc nonisolated private func appWillResignActive() {
+        Task { @MainActor in
+            player?.pause()
+        }
     }
 
     deinit {
@@ -225,15 +246,16 @@ class VideoPlayerUIView: UIView {
 struct MotionBackgroundView: View {
     let preset: MotionPresetType
     let size: CGSize
+    var particleMultiplier: CGFloat = 1.0
 
     var body: some View {
         switch preset {
         case .starfield:
-            StarfieldView(size: size)
+            StarfieldView(size: size, particleMultiplier: particleMultiplier)
         case .crescentGlow:
             CrescentGlowMotionView(size: size)
         case .floatingLanterns:
-            FloatingLanternsMotionView(size: size)
+            FloatingLanternsMotionView(size: size, particleMultiplier: particleMultiplier)
         case .gentleClouds:
             GentleCloudsMotionView(size: size)
         case .mosqueSilhouetteFog:
@@ -244,23 +266,29 @@ struct MotionBackgroundView: View {
 
 struct StarfieldView: View {
     let size: CGSize
-    @State private var phase: Double = 0
+    var particleMultiplier: CGFloat = 1.0
+
+    private var starCount: Int {
+        min(120, Int(CGFloat(80) * particleMultiplier))
+    }
 
     var body: some View {
-        Canvas { context, canvasSize in
-            let starCount = 120
-            for i in 0..<starCount {
-                let seed = Double(i) * 7.31
-                let x = (sin(seed * 3.17) * 0.5 + 0.5) * canvasSize.width
-                let y = (cos(seed * 2.83) * 0.5 + 0.5) * canvasSize.height
-                let twinkle = sin(phase * 0.3 + seed) * 0.5 + 0.5
-                let starSize = (sin(seed * 1.7) * 0.5 + 0.5) * 2.5 + 0.5
-                let opacity = twinkle * 0.6 + 0.15
+        TimelineView(.animation(minimumInterval: 1.0 / 20.0)) { timeline in
+            let phase = timeline.date.timeIntervalSinceReferenceDate * 0.3
+            Canvas { context, canvasSize in
+                for i in 0..<starCount {
+                    let seed = Double(i) * 7.31
+                    let x = (sin(seed * 3.17) * 0.5 + 0.5) * canvasSize.width
+                    let y = (cos(seed * 2.83) * 0.5 + 0.5) * canvasSize.height
+                    let twinkle = sin(phase + seed) * 0.5 + 0.5
+                    let starSize = (sin(seed * 1.7) * 0.5 + 0.5) * 2.5 + 0.5
+                    let opacity = twinkle * 0.6 + 0.15
 
-                context.fill(
-                    Path(ellipseIn: CGRect(x: x - starSize/2, y: y - starSize/2, width: starSize, height: starSize)),
-                    with: .color(.white.opacity(opacity))
-                )
+                    context.fill(
+                        Path(ellipseIn: CGRect(x: x - starSize/2, y: y - starSize/2, width: starSize, height: starSize)),
+                        with: .color(.white.opacity(opacity))
+                    )
+                }
             }
         }
         .frame(width: size.width, height: size.height)
@@ -275,11 +303,6 @@ struct StarfieldView: View {
                 endPoint: .bottom
             )
         )
-        .onAppear {
-            withAnimation(.linear(duration: 30).repeatForever(autoreverses: false)) {
-                phase = .pi * 20
-            }
-        }
     }
 }
 
@@ -343,34 +366,40 @@ struct CrescentGlowMotionView: View {
 
 struct FloatingLanternsMotionView: View {
     let size: CGSize
-    @State private var phase: Double = 0
+    var particleMultiplier: CGFloat = 1.0
+
+    private var lanternCount: Int {
+        min(40, Int(CGFloat(15) * particleMultiplier))
+    }
 
     var body: some View {
-        Canvas { context, canvasSize in
-            let lanternCount = 15
-            for i in 0..<lanternCount {
-                let seed = Double(i) * 5.37
-                let baseX = (sin(seed * 2.1) * 0.5 + 0.5) * canvasSize.width
-                let baseY = (cos(seed * 1.7) * 0.5 + 0.5) * canvasSize.height
-                let floatY = sin(phase * 0.15 + seed) * 8
-                let floatX = cos(phase * 0.1 + seed * 0.7) * 4
-                let lanternSize = (sin(seed) * 0.5 + 0.5) * 6 + 4
-                let opacity = (sin(phase * 0.2 + seed * 1.3) * 0.3 + 0.5)
+        TimelineView(.animation(minimumInterval: 1.0 / 20.0)) { timeline in
+            let phase = timeline.date.timeIntervalSinceReferenceDate * 0.15
+            Canvas { context, canvasSize in
+                for i in 0..<lanternCount {
+                    let seed = Double(i) * 5.37
+                    let baseX = (sin(seed * 2.1) * 0.5 + 0.5) * canvasSize.width
+                    let baseY = (cos(seed * 1.7) * 0.5 + 0.5) * canvasSize.height
+                    let floatY = sin(phase + seed) * 8
+                    let floatX = cos(phase * 0.67 + seed * 0.7) * 4
+                    let lanternSize = (sin(seed) * 0.5 + 0.5) * 6 + 4
+                    let opacity = (sin(phase * 1.3 + seed * 1.3) * 0.3 + 0.5)
 
-                let x = baseX + floatX
-                let y = baseY + floatY
+                    let x = baseX + floatX
+                    let y = baseY + floatY
 
-                let glowRect = CGRect(x: x - lanternSize * 2, y: y - lanternSize * 2, width: lanternSize * 4, height: lanternSize * 4)
-                context.fill(
-                    Path(ellipseIn: glowRect),
-                    with: .color(Color(red: 0.95, green: 0.75, blue: 0.30).opacity(opacity * 0.08))
-                )
+                    let glowRect = CGRect(x: x - lanternSize * 2, y: y - lanternSize * 2, width: lanternSize * 4, height: lanternSize * 4)
+                    context.fill(
+                        Path(ellipseIn: glowRect),
+                        with: .color(Color(red: 0.95, green: 0.75, blue: 0.30).opacity(opacity * 0.08))
+                    )
 
-                let rect = CGRect(x: x - lanternSize/2, y: y - lanternSize/2, width: lanternSize, height: lanternSize)
-                context.fill(
-                    Path(ellipseIn: rect),
-                    with: .color(Color(red: 0.95, green: 0.75, blue: 0.30).opacity(opacity * 0.6))
-                )
+                    let rect = CGRect(x: x - lanternSize/2, y: y - lanternSize/2, width: lanternSize, height: lanternSize)
+                    context.fill(
+                        Path(ellipseIn: rect),
+                        with: .color(Color(red: 0.95, green: 0.75, blue: 0.30).opacity(opacity * 0.6))
+                    )
+                }
             }
         }
         .frame(width: size.width, height: size.height)
@@ -385,11 +414,6 @@ struct FloatingLanternsMotionView: View {
                 endPoint: .bottom
             )
         )
-        .onAppear {
-            withAnimation(.linear(duration: 40).repeatForever(autoreverses: false)) {
-                phase = .pi * 20
-            }
-        }
     }
 }
 

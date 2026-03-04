@@ -1,51 +1,110 @@
 import SwiftUI
 import PhotosUI
 import AVFoundation
+import CryptoKit
 
 @Observable
 @MainActor
 class BackgroundManager {
     var loadedImage: UIImage?
+    var loadedThumbnail: UIImage?
     var extractedPalette: ExtractedPalette = .default
     var isLoadingImage: Bool = false
 
     private let fileManager = FileManager.default
 
-    private var backgroundsDirectory: URL {
-        let docs = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let dir = docs.appendingPathComponent("Backgrounds", isDirectory: true)
-        if !fileManager.fileExists(atPath: dir.path) {
-            try? fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
-        }
+    private var rootDirectory: URL {
+        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        let dir = appSupport.appendingPathComponent("MasjidBackgrounds", isDirectory: true)
+        ensureDirectory(dir)
         return dir
+    }
+
+    private var photosDirectory: URL {
+        let dir = rootDirectory.appendingPathComponent("photos", isDirectory: true)
+        ensureDirectory(dir)
+        return dir
+    }
+
+    private var gifsDirectory: URL {
+        let dir = rootDirectory.appendingPathComponent("gifs", isDirectory: true)
+        ensureDirectory(dir)
+        return dir
+    }
+
+    private var videosDirectory: URL {
+        let dir = rootDirectory.appendingPathComponent("videos", isDirectory: true)
+        ensureDirectory(dir)
+        return dir
+    }
+
+    private var thumbsDirectory: URL {
+        let dir = rootDirectory.appendingPathComponent("thumbs", isDirectory: true)
+        ensureDirectory(dir)
+        return dir
+    }
+
+    private func ensureDirectory(_ url: URL) {
+        if !fileManager.fileExists(atPath: url.path) {
+            try? fileManager.createDirectory(at: url, withIntermediateDirectories: true)
+        }
+    }
+
+    private func directory(for type: BackgroundType) -> URL {
+        switch type {
+        case .photo: return photosDirectory
+        case .gif: return gifsDirectory
+        case .video: return videosDirectory
+        default: return photosDirectory
+        }
     }
 
     static let stockAssets: [BackgroundAsset] = [
         BackgroundAsset(
-            id: "stock_image_01",
+            id: "stock_photo_01",
             name: "Night Mosque Sky",
-            type: .image,
+            type: .photo,
+            source: .stock,
             sourceURL: "https://images.unsplash.com/photo-1564769625688-92f8e688fe2b?w=1920&q=80",
             isStock: true
         ),
         BackgroundAsset(
-            id: "stock_image_02",
+            id: "stock_photo_02",
             name: "Blue Mosque Dawn",
-            type: .image,
+            type: .photo,
+            source: .stock,
             sourceURL: "https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=1920&q=80",
             isStock: true
         ),
         BackgroundAsset(
-            id: "stock_image_03",
+            id: "stock_photo_03",
             name: "Golden Dome",
-            type: .image,
+            type: .photo,
+            source: .stock,
             sourceURL: "https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=1920&q=80",
+            isStock: true
+        ),
+        BackgroundAsset(
+            id: "stock_gif_01",
+            name: "Crescent Stars",
+            type: .gif,
+            source: .stock,
+            sourceURL: "https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif",
+            isStock: true
+        ),
+        BackgroundAsset(
+            id: "stock_video_01",
+            name: "Night Sky Loop",
+            type: .video,
+            source: .stock,
+            sourceURL: "https://cdn.pixabay.com/video/2020/07/30/45580-445081001_tiny.mp4",
             isStock: true
         ),
         BackgroundAsset(
             id: "stock_motion_01",
             name: "Starfield Slow",
             type: .motion,
+            source: .stock,
             motionPreset: .starfield,
             isStock: true
         ),
@@ -53,6 +112,7 @@ class BackgroundManager {
             id: "stock_motion_02",
             name: "Crescent Glow",
             type: .motion,
+            source: .stock,
             motionPreset: .crescentGlow,
             isStock: true
         ),
@@ -60,6 +120,7 @@ class BackgroundManager {
             id: "stock_motion_03",
             name: "Floating Lanterns",
             type: .motion,
+            source: .stock,
             motionPreset: .floatingLanterns,
             isStock: true
         ),
@@ -71,7 +132,6 @@ class BackgroundManager {
                 config.gallery.insert(stock, at: 0)
             }
         }
-        let stockIds = Set(Self.stockAssets.map(\.id))
         config.gallery.sort { a, b in
             if a.isStock && !b.isStock { return true }
             if !a.isStock && b.isStock { return false }
@@ -80,9 +140,9 @@ class BackgroundManager {
                 let bIdx = Self.stockAssets.firstIndex(where: { $0.id == b.id }) ?? 0
                 return aIdx < bIdx
             }
-            return a.addedAt < b.addedAt
+            return a.createdAt < b.createdAt
         }
-        let _ = stockIds
+        config.ensureFallback()
     }
 
     func saveImageFromPhotoPicker(item: PhotosPickerItem, name: String) async -> BackgroundAsset? {
@@ -90,22 +150,7 @@ class BackgroundManager {
         defer { isLoadingImage = false }
 
         guard let data = try? await item.loadTransferable(type: Data.self) else { return nil }
-        guard let compressed = ImageCompressor.compress(imageData: data, maxDimension: 3840, quality: 0.85) else { return nil }
-
-        let fileName = UUID().uuidString + ".jpg"
-        let fileURL = backgroundsDirectory.appendingPathComponent(fileName)
-        do {
-            try compressed.write(to: fileURL)
-        } catch {
-            return nil
-        }
-
-        return BackgroundAsset(
-            name: name.isEmpty ? "Custom Photo" : name,
-            type: .image,
-            localFileName: fileName,
-            isStock: false
-        )
+        return savePhotoData(data, name: name)
     }
 
     func saveImageFromURL(_ urlString: String, name: String) async -> BackgroundAsset? {
@@ -114,30 +159,69 @@ class BackgroundManager {
 
         guard let url = URL(string: urlString) else { return nil }
         guard let (data, _) = try? await URLSession.shared.data(from: url) else { return nil }
+        return savePhotoData(data, name: name)
+    }
+
+    private func savePhotoData(_ data: Data, name: String) -> BackgroundAsset? {
         guard let compressed = ImageCompressor.compress(imageData: data, maxDimension: 3840, quality: 0.85) else { return nil }
 
+        let hash = computeHash(compressed)
+
         let fileName = UUID().uuidString + ".jpg"
-        let fileURL = backgroundsDirectory.appendingPathComponent(fileName)
+        let fileURL = photosDirectory.appendingPathComponent(fileName)
         do {
             try compressed.write(to: fileURL)
         } catch {
             return nil
         }
 
+        let thumbName = generateThumbnail(from: compressed, fileName: fileName)
+
         return BackgroundAsset(
             name: name.isEmpty ? "Custom Photo" : name,
-            type: .image,
-            localFileName: fileName,
-            isStock: false
+            type: .photo,
+            source: .localFile,
+            localFileName: "photos/\(fileName)",
+            thumbnailFileName: thumbName,
+            isStock: false,
+            contentHash: hash
         )
+    }
+
+    private func generateThumbnail(from data: Data, fileName: String) -> String? {
+        guard UIImage(data: data) != nil else { return nil }
+        guard let thumbData = ImageCompressor.compress(imageData: data, maxDimension: 512, quality: 0.7) else { return nil }
+
+        let thumbName = "thumb_\(fileName)"
+        let thumbURL = thumbsDirectory.appendingPathComponent(thumbName)
+        do {
+            try thumbData.write(to: thumbURL)
+            return "thumbs/\(thumbName)"
+        } catch {
+            return nil
+        }
+    }
+
+    private func computeHash(_ data: Data) -> String {
+        let digest = SHA256.hash(data: data)
+        return digest.prefix(16).map { String(format: "%02x", $0) }.joined()
     }
 
     func loadImage(for asset: BackgroundAsset) {
         isLoadingImage = true
 
         if let localFile = asset.localFileName {
-            let fileURL = backgroundsDirectory.appendingPathComponent(localFile)
+            let fileURL = rootDirectory.appendingPathComponent(localFile)
             if let data = try? Data(contentsOf: fileURL),
+               let img = UIImage(data: data) {
+                loadedImage = img
+                extractedPalette = extractColors(from: img)
+                isLoadingImage = false
+                return
+            }
+
+            let legacyURL = legacyBackgroundsDirectory.appendingPathComponent(localFile)
+            if let data = try? Data(contentsOf: legacyURL),
                let img = UIImage(data: data) {
                 loadedImage = img
                 extractedPalette = extractColors(from: img)
@@ -161,18 +245,58 @@ class BackgroundManager {
         }
     }
 
+    func loadThumbnail(for asset: BackgroundAsset) -> UIImage? {
+        if let thumbFile = asset.thumbnailFileName {
+            let thumbURL = rootDirectory.appendingPathComponent(thumbFile)
+            if let data = try? Data(contentsOf: thumbURL),
+               let img = UIImage(data: data) {
+                return img
+            }
+        }
+
+        if let localFile = asset.localFileName {
+            let fileURL = rootDirectory.appendingPathComponent(localFile)
+            if let data = try? Data(contentsOf: fileURL),
+               let img = UIImage(data: data) {
+                return img
+            }
+        }
+
+        return nil
+    }
+
     func deleteAsset(_ asset: BackgroundAsset) {
         guard !asset.isStock else { return }
         if let fileName = asset.localFileName {
-            let fileURL = backgroundsDirectory.appendingPathComponent(fileName)
+            let fileURL = rootDirectory.appendingPathComponent(fileName)
             try? fileManager.removeItem(at: fileURL)
+        }
+        if let thumbName = asset.thumbnailFileName {
+            let thumbURL = rootDirectory.appendingPathComponent(thumbName)
+            try? fileManager.removeItem(at: thumbURL)
         }
     }
 
     func localFileURL(for asset: BackgroundAsset) -> URL? {
         guard let fileName = asset.localFileName else { return nil }
-        let url = backgroundsDirectory.appendingPathComponent(fileName)
-        return fileManager.fileExists(atPath: url.path) ? url : nil
+        let url = rootDirectory.appendingPathComponent(fileName)
+        if fileManager.fileExists(atPath: url.path) { return url }
+        let legacyURL = legacyBackgroundsDirectory.appendingPathComponent(fileName)
+        return fileManager.fileExists(atPath: legacyURL.path) ? legacyURL : nil
+    }
+
+    func assetExists(_ asset: BackgroundAsset) -> Bool {
+        if asset.isStock { return true }
+        if asset.sourceURL != nil { return true }
+        if let fileName = asset.localFileName {
+            return fileManager.fileExists(atPath: rootDirectory.appendingPathComponent(fileName).path)
+        }
+        return false
+    }
+
+    private var legacyBackgroundsDirectory: URL {
+        let docs = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        return docs.appendingPathComponent("Backgrounds", isDirectory: true)
     }
 
     func extractColors(from image: UIImage) -> ExtractedPalette {
@@ -222,7 +346,7 @@ class BackgroundManager {
         let accentB = brightCount > 0 ? brightB / brightCount : avgB
 
         return ExtractedPalette(
-            primary: Color(red: accentR * 1.2, green: accentG * 1.1, blue: accentB * 0.9),
+            primary: Color(red: min(accentR * 1.2, 1.0), green: min(accentG * 1.1, 1.0), blue: accentB * 0.9),
             accent: Color(red: accentR, green: accentG, blue: accentB),
             glow: Color(red: avgR * 0.3, green: avgG * 0.3, blue: avgB * 0.3)
         )

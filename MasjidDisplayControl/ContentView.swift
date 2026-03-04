@@ -87,7 +87,7 @@ struct ContentView: View {
             networkMonitor.start()
             connectionManager.startMonitoring(store: store)
             backgroundManager.ensureStockAssets(in: &store.backgroundConfig)
-            if let active = store.backgroundConfig.activeBackground, active.type == .image {
+            if let active = store.backgroundConfig.activeBackground, active.type == .photo {
                 backgroundManager.loadImage(for: active)
             }
             watchSync.sendState(from: store)
