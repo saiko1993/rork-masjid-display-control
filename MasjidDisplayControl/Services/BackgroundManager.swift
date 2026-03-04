@@ -62,6 +62,22 @@ class BackgroundManager {
 
     static let stockAssets: [BackgroundAsset] = [
         BackgroundAsset(
+            id: "stock_photo_bundle_01",
+            name: "Kaaba Night Sky",
+            type: .photo,
+            source: .stock,
+            localFileName: "bundle://stock_kaaba_night",
+            isStock: true
+        ),
+        BackgroundAsset(
+            id: "stock_photo_bundle_02",
+            name: "Kaaba Historic",
+            type: .photo,
+            source: .stock,
+            localFileName: "bundle://stock_kaaba_historic",
+            isStock: true
+        ),
+        BackgroundAsset(
             id: "stock_photo_01",
             name: "Night Mosque Sky",
             type: .photo,
@@ -86,6 +102,22 @@ class BackgroundManager {
             isStock: true
         ),
         BackgroundAsset(
+            id: "stock_photo_04",
+            name: "Mosque Silhouette",
+            type: .photo,
+            source: .stock,
+            sourceURL: "https://images.unsplash.com/photo-1519817650390-64a93db51149?w=1920&q=80",
+            isStock: true
+        ),
+        BackgroundAsset(
+            id: "stock_photo_05",
+            name: "Desert Moonrise",
+            type: .photo,
+            source: .stock,
+            sourceURL: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1920&q=80",
+            isStock: true
+        ),
+        BackgroundAsset(
             id: "stock_gif_01",
             name: "Crescent Stars",
             type: .gif,
@@ -94,11 +126,27 @@ class BackgroundManager {
             isStock: true
         ),
         BackgroundAsset(
+            id: "stock_gif_02",
+            name: "Night Sky Shimmer",
+            type: .gif,
+            source: .stock,
+            sourceURL: "https://media.giphy.com/media/l0HlBO7eyXzSZkJri/giphy.gif",
+            isStock: true
+        ),
+        BackgroundAsset(
             id: "stock_video_01",
             name: "Night Sky Loop",
             type: .video,
             source: .stock,
             sourceURL: "https://cdn.pixabay.com/video/2020/07/30/45580-445081001_tiny.mp4",
+            isStock: true
+        ),
+        BackgroundAsset(
+            id: "stock_video_02",
+            name: "Mosque Night",
+            type: .video,
+            source: .stock,
+            sourceURL: "https://assets.mixkit.co/videos/4312/4312-720.mp4",
             isStock: true
         ),
         BackgroundAsset(
@@ -239,10 +287,40 @@ class BackgroundManager {
         return digest.prefix(16).map { String(format: "%02x", $0) }.joined()
     }
 
+    func loadBundleImage(named name: String) -> UIImage? {
+        if let path = Bundle.main.path(forResource: name, ofType: "jpg") {
+            return UIImage(contentsOfFile: path)
+        }
+        if let path = Bundle.main.path(forResource: name, ofType: "jpeg") {
+            return UIImage(contentsOfFile: path)
+        }
+        if let path = Bundle.main.path(forResource: name, ofType: "png") {
+            return UIImage(contentsOfFile: path)
+        }
+        return nil
+    }
+
+    func isBundleAsset(_ asset: BackgroundAsset) -> Bool {
+        asset.localFileName?.hasPrefix("bundle://") == true
+    }
+
+    func bundleImageName(for asset: BackgroundAsset) -> String? {
+        guard let localFile = asset.localFileName, localFile.hasPrefix("bundle://") else { return nil }
+        return String(localFile.dropFirst("bundle://".count))
+    }
+
     func loadImage(for asset: BackgroundAsset) {
         isLoadingImage = true
 
-        if let localFile = asset.localFileName {
+        if let bundleName = bundleImageName(for: asset),
+           let img = loadBundleImage(named: bundleName) {
+            loadedImage = img
+            extractedPalette = extractColors(from: img)
+            isLoadingImage = false
+            return
+        }
+
+        if let localFile = asset.localFileName, !localFile.hasPrefix("bundle://") {
             let fileURL = rootDirectory.appendingPathComponent(localFile)
             if let data = try? Data(contentsOf: fileURL),
                let img = UIImage(data: data) {
@@ -278,6 +356,10 @@ class BackgroundManager {
     }
 
     func loadThumbnail(for asset: BackgroundAsset) -> UIImage? {
+        if let bundleName = bundleImageName(for: asset) {
+            return loadBundleImage(named: bundleName)
+        }
+
         if let thumbFile = asset.thumbnailFileName {
             let thumbURL = rootDirectory.appendingPathComponent(thumbFile)
             if let data = try? Data(contentsOf: thumbURL),
@@ -286,7 +368,7 @@ class BackgroundManager {
             }
         }
 
-        if let localFile = asset.localFileName {
+        if let localFile = asset.localFileName, !localFile.hasPrefix("bundle://") {
             let fileURL = rootDirectory.appendingPathComponent(localFile)
             if let data = try? Data(contentsOf: fileURL),
                let img = UIImage(data: data) {
@@ -320,8 +402,9 @@ class BackgroundManager {
     func assetExists(_ asset: BackgroundAsset) -> Bool {
         if asset.isStock { return true }
         if asset.sourceURL != nil { return true }
-        if let fileName = asset.localFileName {
-            return fileManager.fileExists(atPath: rootDirectory.appendingPathComponent(fileName).path)
+        if let localFile = asset.localFileName {
+            if localFile.hasPrefix("bundle://") { return true }
+            return fileManager.fileExists(atPath: rootDirectory.appendingPathComponent(localFile).path)
         }
         return false
     }

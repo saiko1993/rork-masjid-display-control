@@ -57,6 +57,15 @@ struct DynamicBackgroundRenderer: View {
                 .offset(y: smoothParallax)
                 .clipped()
                 .allowsHitTesting(false)
+        } else if let bundleName = backgroundManager.bundleImageName(for: asset),
+                  let img = backgroundManager.loadBundleImage(named: bundleName) {
+            Image(uiImage: img)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: size.width, height: size.height + abs(smoothParallax) * 2 + 40)
+                .offset(y: smoothParallax)
+                .clipped()
+                .allowsHitTesting(false)
         } else if let urlString = asset.sourceURL, let url = URL(string: urlString) {
             WebImage(url: url) { image in
                 image
