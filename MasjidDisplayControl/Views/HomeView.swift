@@ -147,13 +147,7 @@ struct HomeView: View {
     }
 
     private var nextPrayerCard: some View {
-        let state = PrayerStateMachine.evaluate(
-            now: store.demoMode ? (store.simulatedTime ?? currentTime) : currentTime,
-            schedule: store.prayerSchedule,
-            adhanActiveSeconds: store.advanced.adhanActiveSeconds,
-            iqamaConfig: store.iqama,
-            prayerInProgressMinutes: store.advanced.prayerInProgressMinutes
-        )
+        let state = store.stateInfo
 
         return DSCard(glow: phaseColor(state.phase)) {
             VStack(spacing: DS.Spacing.sm) {

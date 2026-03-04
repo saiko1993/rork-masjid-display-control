@@ -12,6 +12,9 @@ class BackgroundManager {
     var isLoadingImage: Bool = false
     var lastError: String?
 
+    private var thumbnailCache: [String: UIImage] = [:]
+    private let maxThumbnailCacheSize = 30
+
     private let fileManager = FileManager.default
 
     private var rootDirectory: URL {
@@ -356,6 +359,21 @@ class BackgroundManager {
     }
 
     func loadThumbnail(for asset: BackgroundAsset) -> UIImage? {
+        if let cached = thumbnailCache[asset.id] {
+            return cached
+        }
+
+        let img: UIImage? = loadThumbnailFromDisk(for: asset)
+        if let img {
+            if thumbnailCache.count >= maxThumbnailCacheSize {
+                thumbnailCache.removeAll(keepingCapacity: true)
+            }
+            thumbnailCache[asset.id] = img
+        }
+        return img
+    }
+
+    private func loadThumbnailFromDisk(for asset: BackgroundAsset) -> UIImage? {
         if let bundleName = bundleImageName(for: asset) {
             return loadBundleImage(named: bundleName)
         }
@@ -377,6 +395,10 @@ class BackgroundManager {
         }
 
         return nil
+    }
+
+    func clearThumbnailCache() {
+        thumbnailCache.removeAll()
     }
 
     func deleteAsset(_ asset: BackgroundAsset) {
