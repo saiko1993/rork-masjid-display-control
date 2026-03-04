@@ -18,7 +18,7 @@ struct DhikrTickerView: View {
     }
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: isPaused)) { timeline in
+        TimelineView(.animation(minimumInterval: 1.0 / 20.0, paused: isPaused)) { timeline in
             GeometryReader { geo in
                 let containerWidth = geo.size.width
                 Canvas { context, size in

@@ -57,6 +57,7 @@ struct DepthStack<Content: View>: View {
                 if showGlow {
                     glowOverlays
                         .ignoresSafeArea()
+                        .drawingGroup()
                 }
             }
 

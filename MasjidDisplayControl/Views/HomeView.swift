@@ -14,7 +14,8 @@ struct HomeView: View {
     @State private var appearAnim: Bool = false
     @State private var isSendingTheme: Bool = false
     @State private var isSendingSync: Bool = false
-    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    private let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
+    private let fastTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         ScrollView {
@@ -63,7 +64,7 @@ struct HomeView: View {
                 }
             }
         }
-        .onReceive(timer) { currentTime = $0 }
+        .onReceive(store.stateInfo.phase == .normal ? timer : fastTimer) { currentTime = $0 }
         .onAppear {
             withAnimation(DSAnimation.appear) {
                 appearAnim = true

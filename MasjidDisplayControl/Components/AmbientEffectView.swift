@@ -3,13 +3,14 @@ import SwiftUI
 struct AmbientStarsView: View {
     let size: CGSize
     var particleMultiplier: CGFloat = 1.0
+    @Environment(\.scenePhase) private var scenePhase
 
     private var starCount: Int {
         min(120, max(20, Int(CGFloat(80) * particleMultiplier)))
     }
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 20.0)) { timeline in
+        TimelineView(.animation(minimumInterval: 1.0 / 10.0, paused: scenePhase != .active)) { timeline in
             let phase = timeline.date.timeIntervalSinceReferenceDate * 0.4
             Canvas { context, canvasSize in
                 for i in 0..<starCount {
@@ -26,6 +27,7 @@ struct AmbientStarsView: View {
                     )
                 }
             }
+            .drawingGroup()
         }
         .frame(width: size.width, height: size.height)
     }
@@ -72,13 +74,14 @@ struct AmbientLanternView: View {
     let size: CGSize
     let accentColor: Color
     var particleMultiplier: CGFloat = 1.0
+    @Environment(\.scenePhase) private var scenePhase
 
     private var count: Int {
         min(40, max(5, Int(CGFloat(10) * particleMultiplier)))
     }
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 20.0)) { timeline in
+        TimelineView(.animation(minimumInterval: 1.0 / 10.0, paused: scenePhase != .active)) { timeline in
             let phase = timeline.date.timeIntervalSinceReferenceDate * 0.12
             Canvas { context, canvasSize in
                 for i in 0..<count {
@@ -106,6 +109,7 @@ struct AmbientLanternView: View {
                     )
                 }
             }
+            .drawingGroup()
         }
         .frame(width: size.width, height: size.height)
     }

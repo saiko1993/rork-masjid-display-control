@@ -31,6 +31,7 @@ struct IslamicPatternView: View {
                 break
             }
         }
+        .drawingGroup()
         .opacity(opacity)
     }
 

@@ -11,6 +11,7 @@ class WatchSyncService: NSObject {
     private var session: WCSession?
     private var pendingState: WatchStatePayload?
     private var updateThrottle: Task<Void, Never>?
+    private var lastSentHash: Int = 0
 
     override init() {
         super.init()
@@ -52,6 +53,15 @@ class WatchSyncService: NSObject {
             prayers: prayers,
             updatedAt: Date()
         )
+
+        var hasher = Hasher()
+        hasher.combine(payload.nextPrayerKey)
+        hasher.combine(payload.phase)
+        hasher.combine(payload.city)
+        hasher.combine(payload.countdownSeconds / 30)
+        let currentHash = hasher.finalize()
+        guard currentHash != lastSentHash else { return }
+        lastSentHash = currentHash
 
         guard let data = try? JSONEncoder().encode(payload) else { return }
         let message: [String: Any] = ["watchState": data]

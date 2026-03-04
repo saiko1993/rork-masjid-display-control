@@ -73,11 +73,11 @@ class ConnectionManager {
                 }
                 let interval: Double
                 if self.isAutoSyncEnabled && self.connectionState == .connected {
-                    interval = 5
+                    interval = 15
                 } else if self.connectionState == .connected {
-                    interval = 30
+                    interval = 45
                 } else {
-                    interval = min(Double(max(1, self.consecutiveFailures)) * 5, 30)
+                    interval = min(Double(max(1, self.consecutiveFailures)) * 10, 60)
                 }
                 try? await Task.sleep(for: .seconds(interval))
             }

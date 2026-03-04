@@ -32,6 +32,9 @@ class AppStore {
     var prayerEnabled: PrayerEnabled = .allEnabled
     var backgroundConfig: BackgroundConfig = .default
 
+    private var saveTask: Task<Void, Never>? = nil
+    private var confirmationTask: Task<Void, Never>? = nil
+
     var currentTheme: ThemeDefinition {
         let base = ThemeDefinition.theme(for: selectedTheme)
         let override = themeCustomizations.override(for: selectedTheme)
@@ -122,6 +125,20 @@ class AppStore {
     }
 
     func save() {
+        saveTask?.cancel()
+        saveTask = Task {
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            performSave()
+        }
+    }
+
+    func saveImmediate() {
+        saveTask?.cancel()
+        performSave()
+    }
+
+    private func performSave() {
         let state = PersistentState(
             schemaVersion: PersistentState.currentSchemaVersion,
             location: location,
@@ -153,8 +170,10 @@ class AppStore {
             UserDefaults.standard.set(data, forKey: "appStore")
         }
         saveConfirmation = true
-        Task {
+        confirmationTask?.cancel()
+        confirmationTask = Task {
             try? await Task.sleep(for: .seconds(2))
+            guard !Task.isCancelled else { return }
             saveConfirmation = false
         }
     }

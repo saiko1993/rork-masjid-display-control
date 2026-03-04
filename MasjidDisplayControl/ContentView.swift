@@ -93,7 +93,7 @@ struct ContentView: View {
             watchSync.sendState(from: store)
             watchSyncTask = Task {
                 while !Task.isCancelled {
-                    try? await Task.sleep(for: .seconds(30))
+                    try? await Task.sleep(for: .seconds(60))
                     guard !Task.isCancelled else { return }
                     watchSync.sendState(from: store)
                 }

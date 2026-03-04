@@ -854,9 +854,20 @@ struct FaceRendererView: View {
         return String(format: "%02d:%02d", m, s)
     }
 
-    private func timeString(_ date: Date) -> String {
+    private static let formatter12: DateFormatter = {
         let f = DateFormatter()
-        f.dateFormat = store.timeFormat == .twelve ? "h:mm" : "HH:mm"
+        f.dateFormat = "h:mm"
+        return f
+    }()
+
+    private static let formatter24: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "HH:mm"
+        return f
+    }()
+
+    private func timeString(_ date: Date) -> String {
+        let f = store.timeFormat == .twelve ? Self.formatter12 : Self.formatter24
         return f.string(from: date)
     }
 }

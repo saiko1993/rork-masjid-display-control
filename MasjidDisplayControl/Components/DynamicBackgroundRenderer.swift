@@ -110,7 +110,7 @@ struct DynamicBackgroundRenderer: View {
                 .offset(y: smoothParallax)
                 .clipped()
                 .allowsHitTesting(false)
-        } else if let localFile = asset.localFileName {
+        } else if asset.localFileName != nil {
             let fileURL = backgroundManager.localFileURL(for: asset)
             if let fileURL {
                 VideoBackgroundView(url: fileURL)
@@ -276,13 +276,14 @@ struct MotionBackgroundView: View {
 struct StarfieldView: View {
     let size: CGSize
     var particleMultiplier: CGFloat = 1.0
+    @Environment(\.scenePhase) private var scenePhase
 
     private var starCount: Int {
         min(120, Int(CGFloat(80) * particleMultiplier))
     }
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 20.0)) { timeline in
+        TimelineView(.animation(minimumInterval: 1.0 / 10.0, paused: scenePhase != .active)) { timeline in
             let phase = timeline.date.timeIntervalSinceReferenceDate * 0.3
             Canvas { context, canvasSize in
                 for i in 0..<starCount {
@@ -299,6 +300,7 @@ struct StarfieldView: View {
                     )
                 }
             }
+            .drawingGroup()
         }
         .frame(width: size.width, height: size.height)
         .background(
@@ -376,13 +378,14 @@ struct CrescentGlowMotionView: View {
 struct FloatingLanternsMotionView: View {
     let size: CGSize
     var particleMultiplier: CGFloat = 1.0
+    @Environment(\.scenePhase) private var scenePhase
 
     private var lanternCount: Int {
         min(40, Int(CGFloat(15) * particleMultiplier))
     }
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 20.0)) { timeline in
+        TimelineView(.animation(minimumInterval: 1.0 / 10.0, paused: scenePhase != .active)) { timeline in
             let phase = timeline.date.timeIntervalSinceReferenceDate * 0.15
             Canvas { context, canvasSize in
                 for i in 0..<lanternCount {
@@ -410,6 +413,7 @@ struct FloatingLanternsMotionView: View {
                     )
                 }
             }
+            .drawingGroup()
         }
         .frame(width: size.width, height: size.height)
         .background(
