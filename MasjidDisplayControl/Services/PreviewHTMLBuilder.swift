@@ -176,15 +176,20 @@ struct PreviewHTMLBuilder {
             background: \(surfaceColor)66; padding: 8px 0;
             overflow: hidden; z-index: 3;
             border-top: 1px solid \(primaryColor)15;
+            display: flex;
+        }
+        .ticker-track {
+            display: flex; flex-shrink: 0;
+            animation: scroll-rtl 60s linear infinite;
         }
         .ticker-text {
-            white-space: nowrap; display: inline-block;
-            animation: scroll-rtl 30s linear infinite;
+            white-space: nowrap; flex-shrink: 0;
             font-size: 14px; color: \(textSecondary);
+            padding: 0 2em;
         }
         @keyframes scroll-rtl {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
         }
         .pattern-overlay {
             position: fixed; inset: 0; z-index: 0;
@@ -233,12 +238,22 @@ struct PreviewHTMLBuilder {
             </div>
         </div>
         <div class="ticker">
-            <span class="ticker-text">
-                سبحان الله والحمد لله ولا إله إلا الله والله أكبر &nbsp; ● &nbsp;
-                اللهم صل وسلم على نبينا محمد &nbsp; ● &nbsp;
-                لا حول ولا قوة إلا بالله &nbsp; ● &nbsp;
-                أستغفر الله العظيم &nbsp; ● &nbsp;
-            </span>
+            <div class="ticker-track">
+                <span class="ticker-text">
+                    سبحان الله والحمد لله ولا إله إلا الله والله أكبر &nbsp; ◆ &nbsp;
+                    اللهم صل وسلم على نبينا محمد &nbsp; ◆ &nbsp;
+                    لا حول ولا قوة إلا بالله &nbsp; ◆ &nbsp;
+                    أستغفر الله العظيم &nbsp; ◆ &nbsp;
+                    حسبنا الله ونعم الوكيل &nbsp; ◆ &nbsp;
+                </span>
+                <span class="ticker-text">
+                    سبحان الله والحمد لله ولا إله إلا الله والله أكبر &nbsp; ◆ &nbsp;
+                    اللهم صل وسلم على نبينا محمد &nbsp; ◆ &nbsp;
+                    لا حول ولا قوة إلا بالله &nbsp; ◆ &nbsp;
+                    أستغفر الله العظيم &nbsp; ◆ &nbsp;
+                    حسبنا الله ونعم الوكيل &nbsp; ◆ &nbsp;
+                </span>
+            </div>
         </div>
         <script>
         const use12h = \(is12h ? "true" : "false");
