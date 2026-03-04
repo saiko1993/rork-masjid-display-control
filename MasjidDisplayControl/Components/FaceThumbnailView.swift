@@ -17,10 +17,10 @@ struct FaceThumbnailView: View {
             }
 
             IslamicPatternView(
-                pattern: theme.backgroundPattern,
+                pattern: .minimal,
                 color: theme.palette.primary,
                 scaleFactor: 0.2,
-                opacity: theme.layers.patternOpacity * 0.7
+                opacity: theme.layers.patternOpacity * 0.5
             )
 
             skeletonLayout

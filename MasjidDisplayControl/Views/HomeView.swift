@@ -14,8 +14,7 @@ struct HomeView: View {
     @State private var appearAnim: Bool = false
     @State private var isSendingTheme: Bool = false
     @State private var isSendingSync: Bool = false
-    private let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
-    private let fastTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         ScrollView {
@@ -33,7 +32,7 @@ struct HomeView: View {
 
                 nextPrayerCard
                     .staggerAppear(visible: appearAnim, index: 2)
-                    .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.3), trigger: store.stateInfo.phase)
+                    .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.3), trigger: currentTime)
 
                 quickChipsRow
 
@@ -64,7 +63,7 @@ struct HomeView: View {
                 }
             }
         }
-        .onReceive(store.stateInfo.phase == .normal ? timer : fastTimer) { currentTime = $0 }
+        .onReceive(timer) { currentTime = $0 }
         .onAppear {
             withAnimation(DSAnimation.appear) {
                 appearAnim = true
@@ -85,22 +84,6 @@ struct HomeView: View {
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
-            )
-            .clipShape(.rect(cornerRadius: DS.Radius.xxl, style: .continuous))
-
-            IslamicPatternView(
-                pattern: store.currentTheme.backgroundPattern,
-                color: store.currentTheme.palette.primary,
-                scaleFactor: 0.25,
-                opacity: store.currentTheme.layers.patternOpacity * 0.4
-            )
-            .clipShape(.rect(cornerRadius: DS.Radius.xxl, style: .continuous))
-
-            RadialGradient(
-                colors: [store.currentTheme.palette.accent.opacity(0.08), .clear],
-                center: .top,
-                startRadius: 0,
-                endRadius: 180
             )
             .clipShape(.rect(cornerRadius: DS.Radius.xxl, style: .continuous))
 

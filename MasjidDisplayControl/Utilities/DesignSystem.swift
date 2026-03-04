@@ -259,10 +259,10 @@ struct ThemePreviewThumbnail: View {
             }
 
             IslamicPatternView(
-                pattern: theme.backgroundPattern,
+                pattern: .minimal,
                 color: theme.palette.primary,
                 scaleFactor: 0.3,
-                opacity: theme.layers.patternOpacity
+                opacity: theme.layers.patternOpacity * 0.6
             )
 
             vignetteOverlay
@@ -363,10 +363,10 @@ struct ThemedBackground: View {
             }
 
             IslamicPatternView(
-                pattern: theme.backgroundPattern,
+                pattern: .minimal,
                 color: theme.palette.primary,
                 scaleFactor: 0.35,
-                opacity: theme.layers.patternOpacity * 0.5
+                opacity: theme.layers.patternOpacity * 0.4
             )
             .ignoresSafeArea()
         }

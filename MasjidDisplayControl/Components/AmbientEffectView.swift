@@ -10,7 +10,7 @@ struct AmbientStarsView: View {
     }
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 10.0, paused: scenePhase != .active)) { timeline in
+        TimelineView(.animation(minimumInterval: 1.0 / 8.0, paused: scenePhase != .active)) { timeline in
             let phase = timeline.date.timeIntervalSinceReferenceDate * 0.4
             Canvas { context, canvasSize in
                 for i in 0..<starCount {
@@ -81,7 +81,7 @@ struct AmbientLanternView: View {
     }
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 10.0, paused: scenePhase != .active)) { timeline in
+        TimelineView(.animation(minimumInterval: 1.0 / 8.0, paused: scenePhase != .active)) { timeline in
             let phase = timeline.date.timeIntervalSinceReferenceDate * 0.12
             Canvas { context, canvasSize in
                 for i in 0..<count {

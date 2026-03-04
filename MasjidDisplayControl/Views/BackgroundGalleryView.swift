@@ -374,21 +374,19 @@ struct BackgroundGalleryView: View {
                     }
             }
         case .gif:
-            Color(.secondarySystemBackground)
-                .overlay {
-                    if let urlString = asset.sourceURL, let url = URL(string: urlString) {
-                        WebImage(url: url, isAnimating: .constant(true)) { image in
-                            image.resizable().aspectRatio(contentMode: .fill)
-                        } placeholder: {
-                            ProgressView().controlSize(.small)
-                        }
-                        .allowsHitTesting(false)
-                    } else {
-                        Image(systemName: "livephoto")
-                            .font(.title2)
-                            .foregroundStyle(.secondary)
+            ZStack {
+                Color(red: 0.05, green: 0.05, blue: 0.12)
+                VStack(spacing: 6) {
+                    Image(systemName: "livephoto")
+                        .font(.title2)
+                        .foregroundStyle(.white.opacity(0.4))
+                    if asset.isStock {
+                        Text("Stock")
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundStyle(.white.opacity(0.3))
                     }
                 }
+            }
         case .video:
             ZStack {
                 Color(red: 0.05, green: 0.05, blue: 0.12)

@@ -1,13 +1,18 @@
 import SwiftUI
 
-struct IslamicPatternView: View {
+struct IslamicPatternView: View, Equatable {
     let pattern: BackgroundPattern
     let color: Color
     let scaleFactor: CGFloat
     var opacity: CGFloat = 0.08
 
+    nonisolated static func == (lhs: IslamicPatternView, rhs: IslamicPatternView) -> Bool {
+        lhs.pattern == rhs.pattern && lhs.scaleFactor == rhs.scaleFactor && lhs.opacity == rhs.opacity
+    }
+
     var body: some View {
         Canvas { context, size in
+            guard pattern != .none else { return }
             switch pattern {
             case .geometricStars:
                 drawGeometricStars(context: context, size: size)
@@ -31,7 +36,7 @@ struct IslamicPatternView: View {
                 break
             }
         }
-        .drawingGroup()
+        .drawingGroup(opaque: false, colorMode: .linear)
         .opacity(opacity)
     }
 

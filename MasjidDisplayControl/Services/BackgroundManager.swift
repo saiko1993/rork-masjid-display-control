@@ -13,7 +13,8 @@ class BackgroundManager {
     var lastError: String?
 
     private var thumbnailCache: [String: UIImage] = [:]
-    private let maxThumbnailCacheSize = 30
+    private var thumbnailAccessOrder: [String] = []
+    private let maxThumbnailCacheSize = 20
 
     private let fileManager = FileManager.default
 
@@ -323,52 +324,72 @@ class BackgroundManager {
             return
         }
 
-        if let localFile = asset.localFileName, !localFile.hasPrefix("bundle://") {
-            let fileURL = rootDirectory.appendingPathComponent(localFile)
-            if let data = try? Data(contentsOf: fileURL),
-               let img = UIImage(data: data) {
-                loadedImage = img
-                extractedPalette = extractColors(from: img)
-                isLoadingImage = false
-                return
-            }
+        Task.detached(priority: .userInitiated) { [self] in
+            var result: UIImage?
 
-            let legacyURL = legacyBackgroundsDirectory.appendingPathComponent(localFile)
-            if let data = try? Data(contentsOf: legacyURL),
-               let img = UIImage(data: data) {
-                loadedImage = img
-                extractedPalette = extractColors(from: img)
-                isLoadingImage = false
-                return
-            }
-        }
-
-        if let urlString = asset.sourceURL, let url = URL(string: urlString) {
-            Task {
-                if let (data, _) = try? await URLSession.shared.data(from: url),
-                   let img = UIImage(data: data) {
-                    loadedImage = img
-                    extractedPalette = extractColors(from: img)
+            if let localFile = asset.localFileName, !localFile.hasPrefix("bundle://") {
+                let fileURL = await rootDirectory.appendingPathComponent(localFile)
+                if let data = try? Data(contentsOf: fileURL) {
+                    result = await Self.downsampleImage(data: data, maxDimension: 2048)
                 }
-                isLoadingImage = false
+
+                if result == nil {
+                    let legacyURL = await legacyBackgroundsDirectory.appendingPathComponent(localFile)
+                    if let data = try? Data(contentsOf: legacyURL) {
+                        result = await Self.downsampleImage(data: data, maxDimension: 2048)
+                    }
+                }
             }
-        } else {
-            loadedImage = nil
-            isLoadingImage = false
+
+            if result == nil, let urlString = asset.sourceURL, let url = URL(string: urlString) {
+                if let (data, _) = try? await URLSession.shared.data(from: url) {
+                    result = await Self.downsampleImage(data: data, maxDimension: 2048)
+                }
+            }
+
+            await MainActor.run {
+                if let img = result {
+                    self.loadedImage = img
+                    self.extractedPalette = self.extractColors(from: img)
+                } else {
+                    self.loadedImage = nil
+                }
+                self.isLoadingImage = false
+            }
         }
+    }
+
+    nonisolated private static func downsampleImage(data: Data, maxDimension: CGFloat) -> UIImage? {
+        let options: [CFString: Any] = [
+            kCGImageSourceShouldCache: false,
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxDimension
+        ]
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil),
+              let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
+            return UIImage(data: data)
+        }
+        return UIImage(cgImage: cgImage)
     }
 
     func loadThumbnail(for asset: BackgroundAsset) -> UIImage? {
         if let cached = thumbnailCache[asset.id] {
+            if let idx = thumbnailAccessOrder.firstIndex(of: asset.id) {
+                thumbnailAccessOrder.remove(at: idx)
+            }
+            thumbnailAccessOrder.append(asset.id)
             return cached
         }
 
         let img: UIImage? = loadThumbnailFromDisk(for: asset)
         if let img {
-            if thumbnailCache.count >= maxThumbnailCacheSize {
-                thumbnailCache.removeAll(keepingCapacity: true)
+            while thumbnailCache.count >= maxThumbnailCacheSize, let oldest = thumbnailAccessOrder.first {
+                thumbnailCache.removeValue(forKey: oldest)
+                thumbnailAccessOrder.removeFirst()
             }
             thumbnailCache[asset.id] = img
+            thumbnailAccessOrder.append(asset.id)
         }
         return img
     }
@@ -399,6 +420,7 @@ class BackgroundManager {
 
     func clearThumbnailCache() {
         thumbnailCache.removeAll()
+        thumbnailAccessOrder.removeAll()
     }
 
     func deleteAsset(_ asset: BackgroundAsset) {

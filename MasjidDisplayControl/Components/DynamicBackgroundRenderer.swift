@@ -283,7 +283,7 @@ struct StarfieldView: View {
     }
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 10.0, paused: scenePhase != .active)) { timeline in
+        TimelineView(.animation(minimumInterval: 1.0 / 8.0, paused: scenePhase != .active)) { timeline in
             let phase = timeline.date.timeIntervalSinceReferenceDate * 0.3
             Canvas { context, canvasSize in
                 for i in 0..<starCount {
@@ -385,7 +385,7 @@ struct FloatingLanternsMotionView: View {
     }
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 10.0, paused: scenePhase != .active)) { timeline in
+        TimelineView(.animation(minimumInterval: 1.0 / 8.0, paused: scenePhase != .active)) { timeline in
             let phase = timeline.date.timeIntervalSinceReferenceDate * 0.15
             Canvas { context, canvasSize in
                 for i in 0..<lanternCount {
@@ -449,13 +449,13 @@ struct GentleCloudsMotionView: View {
             Ellipse()
                 .fill(Color.white.opacity(0.03))
                 .frame(width: 400, height: 80)
-                .blur(radius: 30)
+                .blur(radius: 20)
                 .offset(x: offset1 - 200, y: -size.height * 0.2)
 
             Ellipse()
                 .fill(Color.white.opacity(0.025))
                 .frame(width: 500, height: 100)
-                .blur(radius: 40)
+                .blur(radius: 25)
                 .offset(x: offset2 - 250, y: -size.height * 0.05)
         }
         .frame(width: size.width, height: size.height)
@@ -501,7 +501,7 @@ struct MosqueFogMotionView: View {
             Ellipse()
                 .fill(Color.white.opacity(fogPhase ? 0.04 : 0.02))
                 .frame(width: size.width * 1.5, height: 200)
-                .blur(radius: 50)
+                .blur(radius: 30)
                 .offset(y: size.height * 0.3)
         }
         .frame(width: size.width, height: size.height)
