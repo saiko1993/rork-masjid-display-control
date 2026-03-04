@@ -44,6 +44,8 @@ struct BackgroundGalleryView: View {
                     backgroundManager.loadImage(for: asset)
                     store.save()
                     toastManager?.show(.success, message: "Photo added")
+                } else {
+                    toastManager?.show(.error, message: backgroundManager.lastError ?? "Failed to save photo")
                 }
                 selectedPhoto = nil
             }

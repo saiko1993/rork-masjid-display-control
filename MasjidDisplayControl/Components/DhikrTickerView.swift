@@ -18,13 +18,14 @@ struct DhikrTickerView: View {
     }
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 60.0, paused: isPaused)) { timeline in
+        TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: isPaused)) { timeline in
             GeometryReader { geo in
                 let containerWidth = geo.size.width
                 Canvas { context, size in
-                    let fullText = tickerText + "    ◆    " + tickerText
+                    let singleText = tickerText + "    ◆    "
+                    let doubledText = singleText + singleText
                     let resolved = context.resolve(
-                        Text(fullText)
+                        Text(doubledText)
                             .font(.system(size: 13 * scaleFactor, weight: .medium, design: theme.typography.arabicFontDesign))
                             .foregroundStyle(theme.palette.accent)
                     )
@@ -34,18 +35,20 @@ struct DhikrTickerView: View {
                     guard singleWidth > 0 else { return }
 
                     let elapsed = isPaused ? 0 : timeline.date.timeIntervalSinceReferenceDate
-                    let speed: Double = 40.0
-                    let totalTravel = singleWidth
-                    let progress = elapsed.truncatingRemainder(dividingBy: totalTravel / speed) / (totalTravel / speed)
+                    let speed: Double = 30.0
+                    let cycleDuration = singleWidth / speed
+                    let normalizedTime = elapsed.truncatingRemainder(dividingBy: cycleDuration) / cycleDuration
 
                     let offset: CGFloat
                     if direction == .rtl {
-                        offset = containerWidth - progress * singleWidth
+                        let startX = -singleWidth
+                        offset = startX + normalizedTime * singleWidth
                     } else {
-                        offset = -progress * singleWidth
+                        offset = -normalizedTime * singleWidth
                     }
 
-                    context.draw(resolved, at: CGPoint(x: offset + textSize.width / 2, y: size.height / 2))
+                    let drawPoint = CGPoint(x: offset + textSize.width / 2, y: size.height / 2)
+                    context.draw(resolved, at: drawPoint)
                 }
             }
         }

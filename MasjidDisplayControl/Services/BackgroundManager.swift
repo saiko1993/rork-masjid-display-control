@@ -10,6 +10,7 @@ class BackgroundManager {
     var loadedThumbnail: UIImage?
     var extractedPalette: ExtractedPalette = .default
     var isLoadingImage: Bool = false
+    var lastError: String?
 
     private let fileManager = FileManager.default
 
@@ -149,21 +150,52 @@ class BackgroundManager {
         isLoadingImage = true
         defer { isLoadingImage = false }
 
-        guard let data = try? await item.loadTransferable(type: Data.self) else { return nil }
-        return savePhotoData(data, name: name)
+        do {
+            guard let data = try await item.loadTransferable(type: Data.self) else {
+                lastError = "Could not load image from photo library"
+                return nil
+            }
+            return savePhotoData(data, name: name)
+        } catch {
+            lastError = "Failed to load photo: \(error.localizedDescription)"
+            return nil
+        }
     }
 
     func saveImageFromURL(_ urlString: String, name: String) async -> BackgroundAsset? {
         isLoadingImage = true
         defer { isLoadingImage = false }
 
-        guard let url = URL(string: urlString) else { return nil }
-        guard let (data, _) = try? await URLSession.shared.data(from: url) else { return nil }
-        return savePhotoData(data, name: name)
+        guard let url = URL(string: urlString) else {
+            lastError = "Invalid URL"
+            return nil
+        }
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+                lastError = "Server returned error"
+                return nil
+            }
+            guard !data.isEmpty else {
+                lastError = "Empty response from server"
+                return nil
+            }
+            return savePhotoData(data, name: name)
+        } catch {
+            lastError = "Download failed: \(error.localizedDescription)"
+            return nil
+        }
     }
 
     private func savePhotoData(_ data: Data, name: String) -> BackgroundAsset? {
-        guard let compressed = ImageCompressor.compress(imageData: data, maxDimension: 3840, quality: 0.85) else { return nil }
+        guard UIImage(data: data) != nil else {
+            lastError = "Invalid image data"
+            return nil
+        }
+        guard let compressed = ImageCompressor.compress(imageData: data, maxDimension: 3840, quality: 0.85) else {
+            lastError = "Failed to compress image"
+            return nil
+        }
 
         let hash = computeHash(compressed)
 

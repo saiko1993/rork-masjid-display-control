@@ -314,22 +314,12 @@ struct SettingsView: View {
                                 .font(.subheadline)
                                 .environment(\.layoutDirection, .rightToLeft)
 
-                            Button {
-                                Task {
-                                    await connectionManager.sendTickerMessage(
-                                        message: store.ticker.customMessage,
-                                        store: store
-                                    )
-                                }
-                            } label: {
-                                Label("Broadcast Now", systemImage: "paperplane.fill")
-                                    .font(.caption.weight(.semibold))
-                                    .frame(maxWidth: .infinity)
-                            }
-                            .buttonStyle(.borderedProminent)
-                            .tint(DSTokens.Palette.deepBlue)
-                            .controlSize(.small)
-                            .disabled(store.ticker.customMessage.isEmpty)
+                            BroadcastButton(
+                                message: store.ticker.customMessage,
+                                store: store,
+                                connectionManager: connectionManager,
+                                toastManager: toastManager
+                            )
                         }
                     }
 
@@ -811,7 +801,7 @@ struct SettingsView: View {
                     )
                     .clipShape(.rect(cornerRadius: DS.Radius.md))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(SoftPressStyle())
                 .sensoryFeedback(.success, trigger: store.saveConfirmation)
             }
         }
@@ -864,7 +854,65 @@ struct SettingsView: View {
         }
     }
 
-    private func exportConfig() {
+}
+
+struct BroadcastButton: View {
+    let message: String
+    let store: AppStore
+    @Bindable var connectionManager: ConnectionManager
+    var toastManager: ToastManager?
+
+    @State private var isSending: Bool = false
+    @State private var didSend: Bool = false
+
+    var body: some View {
+        Button {
+            guard !message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+            isSending = true
+            store.save()
+            Task {
+                if connectionManager.connectionState != .connected {
+                    await connectionManager.tryConnect(store: store)
+                }
+                if connectionManager.connectionState == .connected {
+                    await connectionManager.sendTickerMessage(message: message, store: store)
+                    connectionManager.scheduleLightSync(store: store, bleManager: BLEManager())
+                    toastManager?.show(.success, message: "Message broadcast sent")
+                    didSend = true
+                    try? await Task.sleep(for: .seconds(2))
+                    didSend = false
+                } else {
+                    toastManager?.show(.error, message: connectionManager.lastError ?? "Not connected to display")
+                }
+                isSending = false
+            }
+        } label: {
+            HStack(spacing: 6) {
+                if isSending {
+                    ProgressView()
+                        .controlSize(.small)
+                        .tint(.white)
+                } else {
+                    Image(systemName: didSend ? "checkmark.circle.fill" : "paperplane.fill")
+                        .symbolEffect(.bounce, value: didSend)
+                }
+                Text(didSend ? "Sent!" : "Broadcast Now")
+                    .font(.caption.weight(.semibold))
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(didSend ? .green : DSTokens.Palette.deepBlue)
+        .controlSize(.small)
+        .disabled(message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSending)
+        .sensoryFeedback(.success, trigger: didSend)
+        .animation(.spring(duration: 0.3), value: didSend)
+        .animation(.spring(duration: 0.3), value: isSending)
+    }
+}
+
+extension SettingsView {
+    func exportConfig() {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let state = PersistentState(

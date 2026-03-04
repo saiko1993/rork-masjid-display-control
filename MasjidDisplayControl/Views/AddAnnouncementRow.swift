@@ -51,7 +51,7 @@ struct AddAnnouncementRow: View {
                         newText = ""
                         isPinned = false
                         hasExpiration = false
-                        withAnimation { isExpanded = false }
+                        withAnimation(.spring(duration: 0.3)) { isExpanded = false }
                     } label: {
                         Label("Add", systemImage: "plus")
                             .font(.subheadline.weight(.semibold))
@@ -60,6 +60,7 @@ struct AddAnnouncementRow: View {
                     .buttonStyle(.borderedProminent)
                     .controlSize(.small)
                     .disabled(newText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .sensoryFeedback(.impact(flexibility: .soft), trigger: newText.isEmpty)
                 }
                 .padding(DS.Spacing.sm)
                 .background(Color(.tertiarySystemGroupedBackground))
