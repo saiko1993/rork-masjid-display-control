@@ -8,6 +8,7 @@ struct HomeView: View {
     var bleManager: BLEManager?
     var networkMonitor: NetworkMonitor?
     var toastManager: ToastManager?
+    var backgroundManager: BackgroundManager?
 
     @State private var currentTime: Date = Date()
     @State private var appearAnim: Bool = false
@@ -47,7 +48,13 @@ struct HomeView: View {
             .padding(.top, DS.Spacing.xs)
             .padding(.bottom, DS.Spacing.xxl)
         }
-        .background(DepthStack(accentColor: store.currentTheme.palette.accent) { Color.clear })
+        .background(
+            DepthStack(
+                accentColor: store.currentTheme.palette.accent,
+                backgroundConfig: store.backgroundConfig,
+                backgroundManager: backgroundManager
+            ) { Color.clear }
+        )
         .navigationTitle("Masjid Controller")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -362,6 +369,11 @@ struct HomeView: View {
 
             NavigationLink(value: AppRoute.themes) {
                 ActionTileView(icon: "paintpalette.fill", title: "Themes", subtitle: "\(ThemeId.allCases.count) themes", color: DSTokens.Palette.warmAmber)
+            }
+            .buttonStyle(PressEffectStyle())
+
+            NavigationLink(value: AppRoute.backgroundGallery) {
+                ActionTileView(icon: "photo.on.rectangle.angled", title: "Backgrounds", subtitle: store.backgroundConfig.enabled ? "Active" : "Off", color: .purple)
             }
             .buttonStyle(PressEffectStyle())
 

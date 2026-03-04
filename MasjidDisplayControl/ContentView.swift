@@ -34,6 +34,7 @@ enum AppRoute: Hashable {
     case themeStudio(ThemeId)
     case facePicker
     case faceEditor(FaceId)
+    case backgroundGallery
 }
 
 struct ContentView: View {
@@ -47,14 +48,15 @@ struct ContentView: View {
     @State private var homePath = NavigationPath()
     @State private var pushPath = NavigationPath()
     @State private var settingsPath = NavigationPath()
+    @State private var backgroundManager = BackgroundManager()
     @State private var watchSyncTask: Task<Void, Never>? = nil
 
     var body: some View {
         TabView(selection: $selectedTab) {
             Tab(AppTab.home.title, systemImage: AppTab.home.icon, value: .home) {
                 NavigationStack(path: $homePath) {
-                    HomeView(store: store, connectionManager: connectionManager, bleManager: bleManager, networkMonitor: networkMonitor, toastManager: toastManager)
-                        .applyRouteDestinations(store: store, connectionManager: connectionManager, bleManager: bleManager, toastManager: toastManager)
+                    HomeView(store: store, connectionManager: connectionManager, bleManager: bleManager, networkMonitor: networkMonitor, toastManager: toastManager, backgroundManager: backgroundManager)
+                        .applyRouteDestinations(store: store, connectionManager: connectionManager, bleManager: bleManager, toastManager: toastManager, backgroundManager: backgroundManager)
                 }
             }
 
@@ -67,14 +69,14 @@ struct ContentView: View {
             Tab(AppTab.push.title, systemImage: AppTab.push.icon, value: .push) {
                 NavigationStack(path: $pushPath) {
                     PushView(store: store, bleManager: bleManager, connectionManager: connectionManager, networkMonitor: networkMonitor, toastManager: toastManager)
-                        .applyRouteDestinations(store: store, connectionManager: connectionManager, bleManager: bleManager, toastManager: toastManager)
+                        .applyRouteDestinations(store: store, connectionManager: connectionManager, bleManager: bleManager, toastManager: toastManager, backgroundManager: backgroundManager)
                 }
             }
 
             Tab(AppTab.settings.title, systemImage: AppTab.settings.icon, value: .settings) {
                 NavigationStack(path: $settingsPath) {
                     SettingsView(store: store, connectionManager: connectionManager, bleManager: bleManager, toastManager: toastManager)
-                        .applyRouteDestinations(store: store, connectionManager: connectionManager, bleManager: bleManager, toastManager: toastManager)
+                        .applyRouteDestinations(store: store, connectionManager: connectionManager, bleManager: bleManager, toastManager: toastManager, backgroundManager: backgroundManager)
                 }
             }
         }
@@ -84,6 +86,10 @@ struct ContentView: View {
         .onAppear {
             networkMonitor.start()
             connectionManager.startMonitoring(store: store)
+            backgroundManager.ensureStockAssets(in: &store.backgroundConfig)
+            if let active = store.backgroundConfig.activeBackground, active.type == .image {
+                backgroundManager.loadImage(for: active)
+            }
             watchSync.sendState(from: store)
             watchSyncTask = Task {
                 while !Task.isCancelled {
@@ -105,6 +111,7 @@ struct RouteDestinationModifier: ViewModifier {
     let connectionManager: ConnectionManager
     let bleManager: BLEManager
     let toastManager: ToastManager
+    let backgroundManager: BackgroundManager
 
     func body(content: Content) -> some View {
         content
@@ -130,6 +137,8 @@ struct RouteDestinationModifier: ViewModifier {
                     FacePickerView(store: store, connectionManager: connectionManager, bleManager: bleManager, toastManager: toastManager)
                 case .faceEditor(let faceId):
                     FaceEditorView(store: store, faceId: faceId, connectionManager: connectionManager, bleManager: bleManager, toastManager: toastManager)
+                case .backgroundGallery:
+                    BackgroundGalleryView(store: store, backgroundManager: backgroundManager, toastManager: toastManager)
                 }
             }
             .navigationDestination(for: DocSection.self) { section in
@@ -139,7 +148,7 @@ struct RouteDestinationModifier: ViewModifier {
 }
 
 extension View {
-    func applyRouteDestinations(store: AppStore, connectionManager: ConnectionManager, bleManager: BLEManager, toastManager: ToastManager) -> some View {
-        modifier(RouteDestinationModifier(store: store, connectionManager: connectionManager, bleManager: bleManager, toastManager: toastManager))
+    func applyRouteDestinations(store: AppStore, connectionManager: ConnectionManager, bleManager: BLEManager, toastManager: ToastManager, backgroundManager: BackgroundManager) -> some View {
+        modifier(RouteDestinationModifier(store: store, connectionManager: connectionManager, bleManager: bleManager, toastManager: toastManager, backgroundManager: backgroundManager))
     }
 }

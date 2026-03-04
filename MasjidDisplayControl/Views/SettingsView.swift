@@ -890,7 +890,8 @@ struct SettingsView: View {
             power: store.power,
             ramadanConfig: store.ramadanConfig,
             quranProgram: store.quranProgram,
-            prayerEnabled: store.prayerEnabled
+            prayerEnabled: store.prayerEnabled,
+            backgroundConfig: store.backgroundConfig
         )
         guard let data = try? encoder.encode(state),
               let json = String(data: data, encoding: .utf8) else { return }

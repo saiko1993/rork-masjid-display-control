@@ -30,6 +30,7 @@ class AppStore {
     var ramadanConfig: RamadanConfig = .default
     var quranProgram: QuranProgramConfig = .default
     var prayerEnabled: PrayerEnabled = .allEnabled
+    var backgroundConfig: BackgroundConfig = .default
 
     var currentTheme: ThemeDefinition {
         let base = ThemeDefinition.theme(for: selectedTheme)
@@ -144,7 +145,8 @@ class AppStore {
             power: power,
             ramadanConfig: ramadanConfig,
             quranProgram: quranProgram,
-            prayerEnabled: prayerEnabled
+            prayerEnabled: prayerEnabled,
+            backgroundConfig: backgroundConfig
         )
         let encoder = JSONEncoder()
         if let data = try? encoder.encode(state) {
@@ -182,6 +184,7 @@ class AppStore {
         ramadanConfig = state.ramadanConfig ?? .default
         quranProgram = state.quranProgram ?? .default
         prayerEnabled = state.prayerEnabled ?? .allEnabled
+        backgroundConfig = state.backgroundConfig ?? .default
     }
 }
 
@@ -209,6 +212,7 @@ nonisolated struct PersistentState: Codable, Sendable {
     let ramadanConfig: RamadanConfig?
     let quranProgram: QuranProgramConfig?
     let prayerEnabled: PrayerEnabled?
+    let backgroundConfig: BackgroundConfig?
 
     static let currentSchemaVersion = 1
 }

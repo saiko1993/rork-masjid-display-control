@@ -7,6 +7,9 @@ struct DepthStack<Content: View>: View {
     var patternView: AnyView? = nil
     var phaseGlow: Color? = nil
     var ornament: AnyView? = nil
+    var backgroundConfig: BackgroundConfig? = nil
+    var backgroundManager: BackgroundManager? = nil
+    var scrollOffset: CGFloat = 0
     let content: () -> Content
 
     init(
@@ -16,6 +19,9 @@ struct DepthStack<Content: View>: View {
         patternView: AnyView? = nil,
         phaseGlow: Color? = nil,
         ornament: AnyView? = nil,
+        backgroundConfig: BackgroundConfig? = nil,
+        backgroundManager: BackgroundManager? = nil,
+        scrollOffset: CGFloat = 0,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.accentColor = accentColor
@@ -24,17 +30,34 @@ struct DepthStack<Content: View>: View {
         self.patternView = patternView
         self.phaseGlow = phaseGlow
         self.ornament = ornament
+        self.backgroundConfig = backgroundConfig
+        self.backgroundManager = backgroundManager
+        self.scrollOffset = scrollOffset
         self.content = content
+    }
+
+    private var hasDynamicBackground: Bool {
+        guard let config = backgroundConfig else { return false }
+        return config.enabled && config.activeBackground != nil
     }
 
     var body: some View {
         ZStack {
-            backgroundGradient
-                .ignoresSafeArea()
-
-            if showGlow {
-                glowOverlays
+            if hasDynamicBackground, let config = backgroundConfig, let manager = backgroundManager {
+                DynamicBackgroundRenderer(
+                    config: config,
+                    backgroundManager: manager,
+                    accentColor: accentColor,
+                    scrollOffset: scrollOffset
+                )
+            } else {
+                backgroundGradient
                     .ignoresSafeArea()
+
+                if showGlow {
+                    glowOverlays
+                        .ignoresSafeArea()
+                }
             }
 
             if showPattern, let pattern = patternView {
@@ -43,8 +66,10 @@ struct DepthStack<Content: View>: View {
                     .ignoresSafeArea()
             }
 
-            vignetteLayer
-                .ignoresSafeArea()
+            if !hasDynamicBackground {
+                vignetteLayer
+                    .ignoresSafeArea()
+            }
 
             content()
 
