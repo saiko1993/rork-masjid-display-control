@@ -1,0 +1,568 @@
+{
+  "apiVersion": "3.0.0",
+  "generatedFrom": "iOS codebase",
+  "baseUrlDefault": "http://masjidclock.local:8787",
+  "authentication": {
+    "header": "X-API-Key",
+    "hmac": {
+      "enabled": "optional (useHMAC flag)",
+      "algorithm": "HMAC-SHA256",
+      "canonicalFormat": "{METHOD}\\n{PATH}\\n{TIMESTAMP}\\n{NONCE}\\n{SHA256_HEX(body)}",
+      "headers": {
+        "X-API-Key": "API key string",
+        "X-Timestamp": "Unix epoch seconds (string)",
+        "X-Nonce": "UUID string",
+        "X-Signature": "Hex-encoded HMAC-SHA256"
+      }
+    }
+  },
+  "endpoints": [
+    {
+      "name": "Server Info / Ping",
+      "method": "GET",
+      "path": "/v1/info",
+      "headers": { "X-API-Key": "required" },
+      "requestBody": null,
+      "timeout": 5,
+      "response": {
+        "200": {
+          "schema": {
+            "status": "string",
+            "version": "string",
+            "uptime": "number",
+            "hostname": "string"
+          }
+        },
+        "401": "Unauthorized",
+        "5xx": "Server error"
+      },
+      "usedBy": ["ConnectionManager.pingServer", "ConnectionManager.tryConnect", "RestTransport.testConnection", "PreviewView.checkServerReachability", "MirrorModeView.checkServer", "ConnectionManager.runDiagnostics"],
+      "phase": "mvp",
+      "blocking": true
+    },
+    {
+      "name": "Push Theme Pack",
+      "method": "POST",
+      "path": "/v1/theme",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-API-Key": "required (or HMAC headers)"
+      },
+      "timeout": 10,
+      "requestBody": {
+        "type": "ThemePackPayload",
+        "schema": {
+          "version": { "type": "string", "example": "3.0.0" },
+          "pushId": { "type": "string", "example": "UUID" },
+          "sentAtISO": { "type": "string", "example": "2025-01-15T12:00:00Z" },
+          "themeId": { "type": "string", "enum": ["islamic-geo-dark", "ottoman-classic", "minimal-noor", "led-mosque", "islamic-relief", "ottoman-gold-night", "modern-arch-depth", "smart-glass", "led-digital-premium", "sky-silhouette"] },
+          "nameAr": { "type": "string" },
+          "nameEn": { "type": "string" },
+          "isDark": { "type": "boolean" },
+          "contrastRatio": { "type": "number" },
+          "palette": {
+            "type": "object",
+            "properties": {
+              "background": { "type": "string", "format": "hex-color" },
+              "surface": { "type": "string", "format": "hex-color" },
+              "primary": { "type": "string", "format": "hex-color" },
+              "secondary": { "type": "string", "format": "hex-color" },
+              "textPrimary": { "type": "string", "format": "hex-color" },
+              "textSecondary": { "type": "string", "format": "hex-color" },
+              "accent": { "type": "string", "format": "hex-color" },
+              "adhanGlow": { "type": "string", "format": "hex-color" }
+            }
+          },
+          "typography": {
+            "type": "object",
+            "properties": {
+              "timeFontDesign": { "type": "string", "enum": ["default", "serif", "monospaced", "rounded"] },
+              "arabicFontDesign": { "type": "string", "enum": ["default", "serif", "monospaced", "rounded"] },
+              "latinFontDesign": { "type": "string", "enum": ["default", "serif", "monospaced", "rounded"] },
+              "timeWeight": { "type": "string", "enum": ["bold", "semibold", "medium", "heavy", "black", "light", "thin", "ultraLight", "regular"] },
+              "headingWeight": { "type": "string", "enum": ["bold", "semibold", "medium", "heavy", "black", "light", "thin", "ultraLight", "regular"] }
+            }
+          },
+          "tokens": {
+            "type": "object",
+            "properties": {
+              "cornerRadius": { "type": "number" },
+              "cardPadding": { "type": "number" },
+              "sectionSpacing": { "type": "number" },
+              "borderWidth": { "type": "number" },
+              "shadowRadius": { "type": "number" },
+              "minReadableFontSize": { "type": "number" },
+              "safeMargins": { "type": "number" },
+              "tableDensity": { "type": "string", "enum": ["compact", "comfortable"] },
+              "tickerDirection": { "type": "string", "enum": ["ltr", "rtl"] },
+              "minFontScale": { "type": "number" },
+              "maxFontScale": { "type": "number" }
+            }
+          },
+          "backgroundPattern": { "type": "string", "enum": ["geometric_stars", "arabesque", "minimal", "none", "relief_starfield", "arch_mosaic", "hex_grid", "glass_tile", "led_matrix", "mosque_silhouette"] },
+          "layerStack": {
+            "type": "object",
+            "properties": {
+              "backgroundBase": { "type": "string", "format": "hex-color" },
+              "gradientStops": { "type": "array", "items": { "color": "string", "location": "number" } },
+              "gradientAngle": { "type": "number" },
+              "patternType": { "type": "string" },
+              "patternColor": { "type": "string", "format": "hex-color" },
+              "patternOpacity": { "type": "number" },
+              "vignetteType": { "type": "string", "enum": ["none", "radial_dark", "radial_light", "top_fade", "bottom_fade", "edge_burn"] },
+              "vignetteIntensity": { "type": "number" },
+              "elevationStyle": { "type": "string", "enum": ["flat", "raised", "inset", "floating", "glassmorphic", "neumorphic"] },
+              "cardBorderColor": { "type": "string", "nullable": true, "format": "hex-color" },
+              "cardBorderOpacity": { "type": "number" },
+              "hasShimmer": { "type": "boolean" },
+              "shimmerSpeed": { "type": "number" },
+              "adhanGlowStyle": { "type": "string", "enum": ["pulse", "radial_burst", "border_glow", "shimmer_wave", "neon_flicker", "soft_breath"] },
+              "adhanGlowColor": { "type": "string", "format": "hex-color" },
+              "countdownGlowRadius": { "type": "number" },
+              "tableRowSeparator": { "type": "boolean" },
+              "tableRowInset": { "type": "boolean" },
+              "tickerBackground": { "type": "string", "nullable": true, "format": "hex-color" },
+              "backgroundImageUrl": { "type": "string", "nullable": true },
+              "backgroundImageFit": { "type": "string", "nullable": true, "enum": ["cover", "contain", "fill"] }
+            }
+          },
+          "customOverrides": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "backgroundHex": { "type": "string", "nullable": true },
+              "surfaceHex": { "type": "string", "nullable": true },
+              "primaryHex": { "type": "string", "nullable": true },
+              "secondaryHex": { "type": "string", "nullable": true },
+              "textPrimaryHex": { "type": "string", "nullable": true },
+              "textSecondaryHex": { "type": "string", "nullable": true },
+              "accentHex": { "type": "string", "nullable": true },
+              "patternOpacity": { "type": "number", "nullable": true },
+              "vignetteIntensity": { "type": "number", "nullable": true },
+              "backgroundImageUrl": { "type": "string", "nullable": true }
+            }
+          },
+          "face": {
+            "type": "object",
+            "properties": {
+              "faceId": { "type": "string" },
+              "enabledComponents": { "type": "array", "items": "string" }
+            }
+          }
+        }
+      },
+      "response": {
+        "200": "Theme applied",
+        "400": "Invalid payload",
+        "401": "Unauthorized",
+        "5xx": "Server error"
+      },
+      "usedBy": ["ConnectionManager.pairDevice", "ConnectionManager.sendThemePack", "PushService.sendThemePack", "ConnectionManager.flushPendingChanges"],
+      "phase": "mvp",
+      "blocking": true
+    },
+    {
+      "name": "Light Sync",
+      "method": "POST",
+      "path": "/v1/sync",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-API-Key": "required (or HMAC headers)"
+      },
+      "timeout": 10,
+      "requestBody": {
+        "type": "LightSyncPayload",
+        "schema": {
+          "version": { "type": "string" },
+          "pushId": { "type": "string" },
+          "sentAtISO": { "type": "string" },
+          "nowEpoch": { "type": "integer" },
+          "deviceTime": { "type": "string" },
+          "tz": { "type": "string" },
+          "tzOffsetMinutes": { "type": "integer" },
+          "schedule": {
+            "type": "array",
+            "items": {
+              "prayer": { "type": "string", "enum": ["fajr", "dhuhr", "asr", "maghrib", "isha", "jumuah"] },
+              "adhan": { "type": "string", "example": "05:15" },
+              "adhanISO": { "type": "string" },
+              "iqama": { "type": "string", "nullable": true },
+              "iqamaISO": { "type": "string", "nullable": true },
+              "isJumuah": { "type": "boolean" }
+            }
+          },
+          "currentPhase": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "phase": { "type": "string", "enum": ["normal", "adhan_active", "iqama_countdown", "prayer_in_progress"] },
+              "currentPrayer": { "type": "string", "nullable": true },
+              "nextPrayer": { "type": "string", "nullable": true }
+            }
+          },
+          "display": {
+            "type": "object",
+            "properties": {
+              "language": { "type": "string", "enum": ["ar", "en"] },
+              "brightness": { "type": "integer", "min": 0, "max": 100 },
+              "layout": { "type": "string", "enum": ["wide-v1", "compact-v1"] },
+              "showDhikrTicker": { "type": "boolean" },
+              "tickerDirection": { "type": "string", "enum": ["ltr", "rtl"] },
+              "pauseTickerDuringAdhan": { "type": "boolean" },
+              "lockLayout": { "type": "boolean" }
+            }
+          },
+          "brightnessSchedule": {
+            "type": "object",
+            "properties": {
+              "enabled": { "type": "boolean" },
+              "dayBrightness": { "type": "integer" },
+              "nightBrightness": { "type": "integer" },
+              "dayStartHour": { "type": "integer", "min": 0, "max": 23 },
+              "nightStartHour": { "type": "integer", "min": 0, "max": 23 }
+            }
+          },
+          "calculation": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "method": { "type": "string", "enum": ["MWL", "UmmAlQura", "ISNA", "Egyptian", "Karachi"] },
+              "madhab": { "type": "string", "enum": ["Shafi", "Hanafi"] },
+              "offsetsMinutes": { "type": "object", "properties": { "fajr": "int", "dhuhr": "int", "asr": "int", "maghrib": "int", "isha": "int" } }
+            }
+          },
+          "iqama": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "enabled": { "type": "boolean" },
+              "mode": { "type": "string", "enum": ["afterAdhan", "fixedTime"] },
+              "minutes": { "type": "object", "properties": { "fajr": "int", "dhuhr": "int", "asr": "int", "maghrib": "int", "isha": "int" } },
+              "iqamaMode": { "type": "string", "nullable": true, "enum": ["afterAdhan", "fixedTime"] },
+              "fixedTimes": { "type": "object", "nullable": true, "properties": { "fajr": "string", "dhuhr": "string", "asr": "string", "maghrib": "string", "isha": "string" } }
+            }
+          },
+          "jumuah": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "enabled": { "type": "boolean" },
+              "jumuahTime": { "type": "string" },
+              "jumuahIqamaMinutes": { "type": "integer" },
+              "secondJumuahEnabled": { "type": "boolean" },
+              "secondJumuahTime": { "type": "string" }
+            }
+          },
+          "location": {
+            "type": "object",
+            "properties": {
+              "cityName": { "type": "string" },
+              "lat": { "type": "number" },
+              "lng": { "type": "number" },
+              "timezone": { "type": "string" }
+            }
+          },
+          "timeFormat": { "type": "string", "enum": ["24h", "12h"] },
+          "ticker": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "mode": { "type": "string" },
+              "customMessage": { "type": "string" },
+              "pauseDuringAdhan": { "type": "boolean" },
+              "announcements": { "type": "array", "nullable": true, "items": { "id": "string", "text": "string", "isPinned": "boolean" } },
+              "rotationIntervalMinutes": { "type": "integer" }
+            }
+          },
+          "largeMode": { "type": "boolean" },
+          "faceId": { "type": "string", "nullable": true },
+          "audio": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "adhanMode": { "type": "string", "enum": ["adhanOnly", "iqamaOnly", "both", "mute"] },
+              "globalVolume": { "type": "integer" },
+              "perPrayerVolume": { "type": "object", "nullable": true },
+              "preAdhanReminderMinutes": { "type": "integer" },
+              "reminderSoundType": { "type": "string", "enum": ["beep", "bell", "chime", "none"] }
+            }
+          },
+          "dateConfig": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "displayMode": { "type": "string", "enum": ["hijri", "gregorian", "both", "rotate"] },
+              "hijriOffsetDays": { "type": "integer" },
+              "showGregorian": { "type": "boolean" },
+              "showHijri": { "type": "boolean" },
+              "showWeekdayArabic": { "type": "boolean" },
+              "showWeekdayEnglish": { "type": "boolean" }
+            }
+          },
+          "power": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "screenOffEnabled": { "type": "boolean" },
+              "screenOffFromHour": { "type": "integer" },
+              "screenOffToHour": { "type": "integer" },
+              "autoWakeBeforeFajrMinutes": { "type": "integer" }
+            }
+          },
+          "ramadan": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "ishaMode": { "type": "string", "enum": ["normal", "afterMaghribMinutes", "fixedTimeInRamadan"] },
+              "ishaAfterMaghribMinutes": { "type": "integer" },
+              "ishaFixedTime": { "type": "string" },
+              "autoDetect": { "type": "boolean" },
+              "isCurrentlyRamadan": { "type": "boolean" }
+            }
+          },
+          "quranProgram": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "enabled": { "type": "boolean" },
+              "khatmaMode": { "type": "string", "enum": ["juzDaily", "hizbDaily", "surah"] },
+              "playbackMode": { "type": "string", "enum": ["once", "continuous", "repeat"] },
+              "reciterId": { "type": "string" },
+              "reciterName": { "type": "string" },
+              "dailyStartTime": { "type": "string" },
+              "currentDay": { "type": "integer" }
+            }
+          },
+          "prayerEnabled": {
+            "type": "object",
+            "nullable": true,
+            "properties": { "fajr": "boolean", "dhuhr": "boolean", "asr": "boolean", "maghrib": "boolean", "isha": "boolean" }
+          },
+          "activeProfile": { "type": "string", "nullable": true, "enum": ["normal", "ramadan", "summer", "winter"] }
+        }
+      },
+      "response": {
+        "200": "Sync accepted",
+        "400": "Invalid payload",
+        "401": "Unauthorized",
+        "5xx": "Server error"
+      },
+      "usedBy": ["ConnectionManager.pairDevice", "ConnectionManager.sendLightSync", "PushService.sendLightSync", "ConnectionManager.flushPendingChanges"],
+      "phase": "mvp",
+      "blocking": true
+    },
+    {
+      "name": "Send Ticker Message",
+      "method": "POST",
+      "path": "/v1/ticker",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-API-Key": "required (or HMAC headers)"
+      },
+      "timeout": 10,
+      "requestBody": {
+        "type": "TickerPayload",
+        "schema": {
+          "message": { "type": "string" }
+        }
+      },
+      "response": {
+        "200": "Message accepted",
+        "401": "Unauthorized",
+        "5xx": "Server error"
+      },
+      "usedBy": ["ConnectionManager.sendTickerMessage"],
+      "phase": "mvp",
+      "blocking": false
+    },
+    {
+      "name": "Upload Background Image",
+      "method": "POST",
+      "path": "/v1/upload-background",
+      "headers": {
+        "Content-Type": "multipart/form-data; boundary=<uuid>",
+        "X-API-Key": "required"
+      },
+      "timeout": 30,
+      "requestBody": {
+        "type": "multipart/form-data",
+        "fields": [
+          {
+            "name": "file",
+            "contentType": "image/jpeg",
+            "description": "JPEG image data with filename in Content-Disposition"
+          }
+        ]
+      },
+      "response": {
+        "200": { "schema": { "url": "string" } },
+        "401": "Unauthorized",
+        "413": "File too large",
+        "5xx": "Server error"
+      },
+      "usedBy": ["ConnectionManager.uploadBackgroundImage"],
+      "phase": "mvp",
+      "blocking": false
+    },
+    {
+      "name": "Audio Config",
+      "method": "POST",
+      "path": "/v1/audio",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-API-Key": "required (or HMAC headers)"
+      },
+      "timeout": 10,
+      "requestBody": {
+        "type": "AudioSyncPayload",
+        "schema": {
+          "adhanMode": { "type": "string", "enum": ["adhanOnly", "iqamaOnly", "both", "mute"] },
+          "globalVolume": { "type": "integer" },
+          "perPrayerVolume": { "type": "object", "nullable": true },
+          "preAdhanReminderMinutes": { "type": "integer" },
+          "reminderSoundType": { "type": "string", "enum": ["beep", "bell", "chime", "none"] }
+        }
+      },
+      "response": {
+        "200": "Audio config applied",
+        "401": "Unauthorized",
+        "404": "Not implemented",
+        "5xx": "Server error"
+      },
+      "usedBy": ["ConnectionManager.runDiagnostics"],
+      "phase": "phase2",
+      "blocking": false
+    },
+    {
+      "name": "Power Config",
+      "method": "POST",
+      "path": "/v1/power",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-API-Key": "required (or HMAC headers)"
+      },
+      "timeout": 10,
+      "requestBody": {
+        "type": "PowerSyncPayload",
+        "schema": {
+          "screenOffEnabled": { "type": "boolean" },
+          "screenOffFromHour": { "type": "integer" },
+          "screenOffToHour": { "type": "integer" },
+          "autoWakeBeforeFajrMinutes": { "type": "integer" }
+        }
+      },
+      "response": {
+        "200": "Power config applied",
+        "401": "Unauthorized",
+        "404": "Not implemented",
+        "5xx": "Server error"
+      },
+      "usedBy": ["ConnectionManager.runDiagnostics"],
+      "phase": "phase2",
+      "blocking": false
+    },
+    {
+      "name": "Ramadan Config",
+      "method": "POST",
+      "path": "/v1/ramadan",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-API-Key": "required (or HMAC headers)"
+      },
+      "timeout": 10,
+      "requestBody": {
+        "type": "RamadanSyncPayload",
+        "schema": {
+          "ishaMode": { "type": "string", "enum": ["normal", "afterMaghribMinutes", "fixedTimeInRamadan"] },
+          "ishaAfterMaghribMinutes": { "type": "integer" },
+          "ishaFixedTime": { "type": "string" },
+          "autoDetect": { "type": "boolean" },
+          "isCurrentlyRamadan": { "type": "boolean" }
+        }
+      },
+      "response": {
+        "200": "Ramadan config applied",
+        "401": "Unauthorized",
+        "404": "Not implemented",
+        "5xx": "Server error"
+      },
+      "usedBy": ["ConnectionManager.runDiagnostics"],
+      "phase": "phase2",
+      "blocking": false
+    },
+    {
+      "name": "Quran Program Config",
+      "method": "POST",
+      "path": "/v1/quran-program",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-API-Key": "required (or HMAC headers)"
+      },
+      "timeout": 10,
+      "requestBody": {
+        "type": "QuranProgramSyncPayload",
+        "schema": {
+          "enabled": { "type": "boolean" },
+          "khatmaMode": { "type": "string", "enum": ["juzDaily", "hizbDaily", "surah"] },
+          "playbackMode": { "type": "string", "enum": ["once", "continuous", "repeat"] },
+          "reciterId": { "type": "string" },
+          "reciterName": { "type": "string" },
+          "dailyStartTime": { "type": "string" },
+          "currentDay": { "type": "integer" }
+        }
+      },
+      "response": {
+        "200": "Quran program config applied",
+        "401": "Unauthorized",
+        "404": "Not implemented",
+        "5xx": "Server error"
+      },
+      "usedBy": ["ConnectionManager.runDiagnostics"],
+      "phase": "phase2",
+      "blocking": false
+    },
+    {
+      "name": "Server State",
+      "method": "GET",
+      "path": "/v1/state",
+      "headers": { "X-API-Key": "required" },
+      "requestBody": null,
+      "timeout": 8,
+      "response": {
+        "200": {
+          "schema": {
+            "currentPhase": "string",
+            "currentPrayer": "string",
+            "nextPrayer": "string",
+            "brightness": "integer",
+            "screenOn": "boolean",
+            "lastSyncAt": "string",
+            "themeId": "string"
+          }
+        },
+        "401": "Unauthorized",
+        "404": "Not implemented",
+        "5xx": "Server error"
+      },
+      "usedBy": ["ConnectionManager.runDiagnostics"],
+      "phase": "phase2",
+      "blocking": false
+    },
+    {
+      "name": "Display Page",
+      "method": "GET",
+      "path": "/display",
+      "headers": { "X-API-Key": "optional" },
+      "requestBody": null,
+      "timeout": 10,
+      "response": {
+        "200": "HTML page",
+        "404": "Not implemented",
+        "5xx": "Server error"
+      },
+      "usedBy": ["PreviewView (WebView)", "MirrorModeView (WebView)", "ConnectionManager.runDiagnostics"],
+      "phase": "mvp",
+      "blocking": false
+    }
+  ]
+}

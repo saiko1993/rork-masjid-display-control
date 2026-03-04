@@ -578,6 +578,19 @@ nonisolated struct DiagnosticResult: Identifiable, Sendable {
     let error: String?
 
     var isSuccess: Bool {
-        error == nil && (200...499).contains(statusCode)
+        error == nil && (200...299).contains(statusCode)
+    }
+
+    var isNotImplemented: Bool {
+        statusCode == 404
+    }
+
+    var statusLabel: String {
+        if error != nil && statusCode == 0 { return "Unreachable" }
+        if statusCode == 404 { return "Not implemented" }
+        if (200...299).contains(statusCode) { return "Pass" }
+        if (400...499).contains(statusCode) { return "Client error" }
+        if statusCode >= 500 { return "Server error" }
+        return "Unknown"
     }
 }
