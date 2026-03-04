@@ -38,18 +38,20 @@ enum AppRoute: Hashable {
 }
 
 struct ContentView: View {
-    @State private var store = AppStore()
-    @State private var bleManager = BLEManager()
-    @State private var connectionManager = ConnectionManager()
-    @State private var networkMonitor = NetworkMonitor()
-    @State private var toastManager = ToastManager()
+    let store: AppStore
+    let bleManager: BLEManager
+    let connectionManager: ConnectionManager
+    let networkMonitor: NetworkMonitor
+    let toastManager: ToastManager
+    let backgroundManager: BackgroundManager
+
     @State private var watchSync = WatchSyncService()
     @State private var selectedTab: AppTab = .home
     @State private var homePath = NavigationPath()
     @State private var pushPath = NavigationPath()
     @State private var settingsPath = NavigationPath()
-    @State private var backgroundManager = BackgroundManager()
     @State private var watchSyncTask: Task<Void, Never>? = nil
+    @State private var isReady: Bool = false
 
     var body: some View {
         TabView(selection: $selectedTab) {

@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		XX7C19D9FC5D10C86B8961XX /* MasjidWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = XXD1F828F2356AFBA440DBXX /* MasjidWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		XX8DD8B471784045F9341EXX /* PopupView in Frameworks */ = {isa = PBXBuildFile; productRef = XX30910CBE3632DF5AD9A7XX /* PopupView */; };
 		XX9211A1CC7D39B9D31036XX /* SwiftUIX in Frameworks */ = {isa = PBXBuildFile; productRef = XXEE1086A865BDC092DA12XX /* SwiftUIX */; };
 		XXA78FEC76C37ECAC6834FXX /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = XXCF8CEA2B8D311185D21BXX /* SDWebImageSwiftUI */; };
@@ -28,28 +27,8 @@
 			remoteGlobalIDString = 105FC5792E9EAD3100EA8BCF;
 			remoteInfo = MasjidDisplayControl;
 		};
-		XXA07FBB179F77316FA2CCXX /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 105FC5722E9EAD3100EA8BCF /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = XX5626A02B8B8ECDEFA5CEXX;
-			remoteInfo = MasjidWatch;
-		};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		XXBD45FAA12FB24A6888F3XX /* Embed Watch Content */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
-			dstSubfolderSpec = 16;
-			files = (
-				XX7C19D9FC5D10C86B8961XX /* MasjidWatch.app in Embed Watch Content */,
-			);
-			name = "Embed Watch Content";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		105FC57A2E9EAD3100EA8BCF /* MasjidDisplayControl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MasjidDisplayControl.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -354,11 +333,6 @@
 			isa = PBXTargetDependency;
 			target = 105FC5792E9EAD3100EA8BCF /* MasjidDisplayControl */;
 			targetProxy = 105FC5942E9EAD3200EA8BCF /* PBXContainerItemProxy */;
-		};
-		XXFFC36DD5CF460DA2E6A4XX /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = XX5626A02B8B8ECDEFA5CEXX /* MasjidWatch */;
-			targetProxy = XXA07FBB179F77316FA2CCXX /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
