@@ -365,13 +365,13 @@ struct BackgroundGalleryView: View {
                         }
                         .allowsHitTesting(false)
                     }
+                    .onAppear { backgroundManager.loadThumbnailAsync(for: asset) }
             } else {
                 Color(.secondarySystemBackground)
                     .overlay {
-                        Image(systemName: "photo.fill")
-                            .font(.title2)
-                            .foregroundStyle(.secondary)
+                        ProgressView().controlSize(.small)
                     }
+                    .onAppear { backgroundManager.loadThumbnailAsync(for: asset) }
             }
         case .gif:
             ZStack {

@@ -1,23 +1,24 @@
 import UIKit
+import ImageIO
 
 enum ImageCompressor {
     static func compress(imageData: Data, maxDimension: CGFloat = 1920, quality: CGFloat = 0.8) -> Data? {
-        guard let image = UIImage(data: imageData) else { return nil }
+        guard let source = CGImageSourceCreateWithData(imageData as CFData, nil) else { return nil }
 
-        let size = image.size
-        let scale: CGFloat
-        if size.width > size.height {
-            scale = size.width > maxDimension ? maxDimension / size.width : 1.0
-        } else {
-            scale = size.height > maxDimension ? maxDimension / size.height : 1.0
-        }
+        let options: [CFString: Any] = [
+            kCGImageSourceShouldCache: false,
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxDimension
+        ]
+        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else { return nil }
 
-        let newSize = CGSize(width: size.width * scale, height: size.height * scale)
-        let renderer = UIGraphicsImageRenderer(size: newSize)
-        let resized = renderer.image { _ in
-            image.draw(in: CGRect(origin: .zero, size: newSize))
-        }
+        let uiImage = UIImage(cgImage: cgImage)
+        return uiImage.jpegData(compressionQuality: quality)
+    }
 
-        return resized.jpegData(compressionQuality: quality)
+    static func isValidImage(data: Data) -> Bool {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return false }
+        return CGImageSourceGetCount(source) > 0
     }
 }
