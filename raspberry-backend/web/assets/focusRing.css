@@ -1,0 +1,10 @@
+.focus-ring {
+  outline: 3px solid rgba(255, 215, 128, 0.95);
+  outline-offset: 2px;
+  border-radius: 8px;
+  box-shadow: 0 0 0 2px rgba(255, 180, 64, 0.35), 0 0 28px rgba(255, 180, 64, 0.4);
+  transition: all .25s ease;
+}
+.next-prayer-row {
+  background: rgba(255, 206, 99, 0.16);
+}

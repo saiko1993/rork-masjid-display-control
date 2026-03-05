@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en" dir="auto">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Masjid Display</title>
+  <link rel="stylesheet" href="/assets/focusRing.css" />
+  <style>
+    :root {
+      --fg: #ffffff;
+      --muted: #d3d9ef;
+      --card: rgba(0, 0, 0, 0.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--fg);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      overflow: hidden;
+      background: #0a0f1e;
+    }
+    .bg { position: fixed; inset: 0; z-index: -4; background: linear-gradient(145deg, #0f1c3d, #151515); }
+    .bg-pattern { position: fixed; inset: 0; z-index: -3; opacity: .2; background-size: 240px 240px; }
+    .bg-image { position: fixed; inset: 0; z-index: -2; background-size: cover; background-position: center; opacity: .45; }
+    .bg-vignette { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, transparent 40%, rgba(0,0,0,.65) 100%); }
+
+    .wrap {
+      display: grid;
+      gap: clamp(8px, 1vw, 16px);
+      grid-template-rows: auto auto 1fr auto;
+      padding: clamp(10px, 1.8vw, 24px);
+      height: 100vh;
+    }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .clock { font-size: clamp(28px, 4.2vw, 56px); font-weight: 800; letter-spacing: 1px; }
+    .meta { text-align: end; }
+    .city { font-size: clamp(14px, 1.8vw, 24px); color: var(--muted); }
+    .phase {
+      margin-top: 6px;
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.16);
+      font-size: clamp(12px, 1.2vw, 18px);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .next {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      background: var(--card);
+      border-radius: 14px;
+      padding: clamp(10px, 1.4vw, 18px);
+    }
+    .next-name { font-size: clamp(22px, 3vw, 40px); font-weight: 700; }
+    .countdown { font-size: clamp(24px, 3.5vw, 44px); font-weight: 900; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(12, 18, 40, 0.52);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    th, td {
+      text-align: start;
+      padding: clamp(8px, 1vw, 14px);
+      font-size: clamp(13px, 1.35vw, 24px);
+      border-bottom: 1px solid rgba(255, 255, 255, .15);
+    }
+    th { color: var(--muted); font-weight: 600; }
+
+    .ticker {
+      background: rgba(8, 12, 28, .78);
+      border: 1px solid rgba(255, 255, 255, .16);
+      border-radius: 12px;
+      padding: 8px 0;
+      overflow: hidden;
+      position: relative;
+      min-height: 44px;
+    }
+    .ticker-track {
+      white-space: nowrap;
+      display: inline-block;
+      font-size: clamp(16px, 1.6vw, 28px);
+      padding-inline: 20px;
+      animation: ticker-ltr 24s linear infinite;
+    }
+    .ticker.rtl .ticker-track { animation-name: ticker-rtl; }
+    .ticker.paused .ticker-track { animation-play-state: paused; }
+
+    @keyframes ticker-ltr {
+      from { transform: translateX(100%); }
+      to { transform: translateX(-100%); }
+    }
+    @keyframes ticker-rtl {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(100%); }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="bg-pattern" id="bgPattern"></div>
+  <div class="bg-image" id="bgImage"></div>
+  <div class="bg-vignette" id="bgVignette"></div>
+
+  <main class="wrap">
+    <header class="top">
+      <div class="clock" id="clock">--:--:--</div>
+      <div class="meta">
+        <div class="city" id="city">City</div>
+        <div class="phase" id="phaseBadge">IDLE</div>
+      </div>
+    </header>
+
+    <section class="next">
+      <div class="next-name" id="nextPrayer">Next Prayer</div>
+      <div class="countdown" id="countdown">00:00</div>
+    </section>
+
+    <section>
+      <table>
+        <thead><tr><th>Prayer</th><th>Adhan</th><th>Iqama</th></tr></thead>
+        <tbody id="prayerRows"></tbody>
+      </table>
+    </section>
+
+    <section class="ticker rtl" id="ticker">
+      <div class="ticker-track" id="tickerTrack">—</div>
+    </section>
+  </main>
+
+  <script src="/assets/focusRing.js"></script>
+  <script>
+    const els = {
+      clock: document.getElementById('clock'),
+      city: document.getElementById('city'),
+      phaseBadge: document.getElementById('phaseBadge'),
+      nextPrayer: document.getElementById('nextPrayer'),
+      countdown: document.getElementById('countdown'),
+      prayerRows: document.getElementById('prayerRows'),
+      ticker: document.getElementById('ticker'),
+      tickerTrack: document.getElementById('tickerTrack'),
+      bgPattern: document.getElementById('bgPattern'),
+      bgImage: document.getElementById('bgImage'),
+      bgVignette: document.getElementById('bgVignette')
+    };
+
+    setInterval(() => {
+      const d = new Date();
+      els.clock.textContent = d.toLocaleTimeString('en-GB', { hour12: false });
+    }, 250);
+
+    function fmt(seconds) {
+      const s = Math.max(0, Number(seconds || 0));
+      const hh = String(Math.floor(s / 3600)).padStart(2, '0');
+      const mm = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+      const ss = String(Math.floor(s % 60)).padStart(2, '0');
+      return hh === '00' ? `${mm}:${ss}` : `${hh}:${mm}:${ss}`;
+    }
+
+    function applyTheme(theme = {}) {
+      const stops = theme.gradientStops || [];
+      if (stops.length >= 2) {
+        const g = stops.map(s => `${s.color || '#0f1c3d'} ${s.position || 0}%`).join(', ');
+        document.querySelector('.bg').style.background = `linear-gradient(145deg, ${g})`;
+      }
+      const pattern = theme.pattern || {};
+      if (pattern.enabled) {
+        els.bgPattern.style.backgroundImage = pattern.cssPattern || 'radial-gradient(rgba(255,255,255,.2) 1px, transparent 1px)';
+      } else {
+        els.bgPattern.style.backgroundImage = 'none';
+      }
+      const vignette = theme.vignette || {};
+      if (vignette.enabled === false) {
+        els.bgVignette.style.display = 'none';
+      } else {
+        els.bgVignette.style.display = 'block';
+        els.bgVignette.style.opacity = vignette.opacity ?? 1;
+      }
+      els.bgImage.style.backgroundImage = theme.backgroundImageUrl ? `url(${theme.backgroundImageUrl})` : 'none';
+    }
+
+    function renderRows(prayers = [], nextKey = '') {
+      els.prayerRows.innerHTML = '';
+      prayers.slice(0, 5).forEach((p) => {
+        const tr = document.createElement('tr');
+        tr.dataset.key = p.key || '';
+        tr.innerHTML = `<td>${p.nameAr || p.nameEn || p.key || '-'}</td><td>${p.adhan || '-'}</td><td>${p.iqama || '-'}</td>`;
+        if ((p.key || '') === nextKey) tr.classList.add('next-prayer-row');
+        els.prayerRows.appendChild(tr);
+      });
+      window.FocusRing?.highlight(els.phaseBadge, document.querySelector('.next-prayer-row'));
+    }
+
+    async function tick() {
+      try {
+        const res = await fetch('/v1/display', { cache: 'no-store', headers: { 'X-API-Key': localStorage.getItem('apiKey') || '' } });
+        if (!res.ok) return;
+        const data = await res.json();
+        els.city.textContent = data.city || 'Masjid';
+        els.phaseBadge.textContent = (data.phase || 'idle').toUpperCase();
+        els.nextPrayer.textContent = data.nextPrayerAr || data.nextPrayerKey || '—';
+        els.countdown.textContent = fmt(data.countdownSeconds);
+
+        renderRows(data.prayers || [], data.nextPrayerKey || '');
+        applyTheme(data.theme || {});
+
+        els.ticker.classList.toggle('rtl', (data.tickerDirection || 'rtl').toLowerCase() === 'rtl');
+        els.ticker.classList.toggle('paused', Boolean(data.tickerPaused));
+        els.tickerTrack.textContent = data.tickerMessage || ' ';
+      } catch (_) {}
+    }
+
+    tick();
+    setInterval(tick, 1500);
+  </script>
+</body>
+</html>
