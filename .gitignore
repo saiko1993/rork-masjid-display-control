@@ -36,3 +36,8 @@ rork-eslint.config.js
 core
 node_modules
 .expo
+
+# Raspberry Pi backend
+raspberry-backend/venv/
+raspberry-backend/__pycache__/
+raspberry-backend/*.pyc

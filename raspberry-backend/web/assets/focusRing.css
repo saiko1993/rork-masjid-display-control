@@ -1,0 +1,37 @@
+/* focusRing.css – highlight the next-prayer row and phase badge */
+
+/* ── Next-prayer row highlight ────────────────────────────────── */
+#prayer-table tr.focus-row td {
+  background: rgba(201, 168, 76, 0.15);
+  border-top: 1px solid rgba(201, 168, 76, 0.35);
+  border-bottom: 1px solid rgba(201, 168, 76, 0.35);
+}
+
+#prayer-table tr.focus-row td:first-child {
+  border-left: 3px solid var(--primary, #c9a84c);
+  border-radius: var(--radius, 12px) 0 0 var(--radius, 12px);
+}
+
+#prayer-table tr.focus-row td:last-child {
+  border-radius: 0 var(--radius, 12px) var(--radius, 12px) 0;
+}
+
+#prayer-table tr.focus-row .prayer-name-ar {
+  color: var(--accent, #e8c86d);
+}
+
+/* ── Phase badge glow ─────────────────────────────────────────── */
+#phase-badge.focus-phase {
+  box-shadow: 0 0 0 2px var(--adhan-glow, #e8c86d),
+              0 0 12px 4px rgba(232, 200, 109, 0.4);
+  background: rgba(232, 200, 109, 0.25);
+  color: #fff;
+  transition: box-shadow 0.4s ease, background 0.4s ease;
+}
+
+/* ── Responsive adjustments ───────────────────────────────────── */
+@media (max-width: 800px) {
+  #prayer-table tr.focus-row td:first-child {
+    border-left-width: 2px;
+  }
+}
