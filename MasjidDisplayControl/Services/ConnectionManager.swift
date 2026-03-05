@@ -1,5 +1,6 @@
 import Foundation
 import Network
+import UIKit
 
 nonisolated enum SyncConnectionState: String, Sendable {
     case disconnected
@@ -439,8 +440,29 @@ class ConnectionManager {
             request.setValue(config.apiKey, forHTTPHeaderField: "X-API-Key")
 
             if method == "POST" {
-                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-                request.httpBody = "{}".data(using: .utf8)
+                if urlString.hasSuffix("/v1/theme") {
+                    let themePayload = PayloadBuilder.buildThemePack(from: store)
+                    guard let themeData = PayloadBuilder.encode(themePayload) else {
+                        results.append(DiagnosticResult(name: name, statusCode: 0, responseTime: 0, error: "Failed to encode theme payload"))
+                        continue
+                    }
+                    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                    request.httpBody = themeData
+                } else if urlString.hasSuffix("/v1/upload-background") {
+                    let boundary = UUID().uuidString
+                    var body = Data()
+                    let testImageData = makeMinimalJPEGData()
+                    body.append("--\(boundary)\r\n".data(using: .utf8) ?? Data())
+                    body.append("Content-Disposition: form-data; name=\"file\"; filename=\"test.jpg\"\r\n".data(using: .utf8) ?? Data())
+                    body.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8) ?? Data())
+                    body.append(testImageData)
+                    body.append("\r\n--\(boundary)--\r\n".data(using: .utf8) ?? Data())
+                    request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+                    request.httpBody = body
+                } else {
+                    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                    request.httpBody = "{}".data(using: .utf8)
+                }
             }
 
             let start = Date()
@@ -456,6 +478,15 @@ class ConnectionManager {
         }
 
         return results
+    }
+
+    private func makeMinimalJPEGData() -> Data {
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: 1, height: 1))
+        let image = renderer.image { ctx in
+            UIColor.gray.setFill()
+            ctx.fill(CGRect(x: 0, y: 0, width: 1, height: 1))
+        }
+        return image.jpegData(compressionQuality: 0.1) ?? Data()
     }
 
     func generateDebugReport(store: AppStore, results: [DiagnosticResult]) -> String {
