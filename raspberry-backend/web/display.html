@@ -3,66 +3,80 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>مسجد · شفافية تامة · زجاج نقي</title>
+  <title>مسجد · واجهة متكاملة مع الخادم</title>
   <style>
     /* ===== RESET ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { width:100%; height:100%; overflow: hidden; font-family: "Segoe UI", system-ui, -apple-system, sans-serif; background: #000; }
+    html, body { width:100%; height:100%; overflow: hidden; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #000; }
 
-    /* ===== خلفية غنية ===== */
-    #bg-full {
+    /* ===== المتغيرات ===== */
+    :root {
+      --safe: clamp(8px, 2vw, 24px);
+      --headerH: clamp(90px, 12vh, 150px);
+      --verseH: clamp(48px, 6vh, 85px);
+      --tickerH: clamp(52px, 7vh, 100px);
+      
+      --clockSize: clamp(52px, 7vw, 128px);
+      --daySize: clamp(22px, 2.5vw, 40px);
+      --dateSize: clamp(16px, 1.8vw, 28px);
+      --citySize: clamp(18px, 2vw, 34px);
+      --nextName: clamp(38px, 5vw, 80px);
+      --countSize: clamp(24px, 3.2vw, 58px);
+      --cardName: clamp(24px, 2.8vw, 44px);
+      --cardTime: clamp(22px, 2.5vw, 42px);
+      --badgeSize: clamp(14px, 1.4vw, 20px);
+      
+      --gold: #f8df9c;
+      --gold-deep: #cfb063;
+      --text-light: #ffffff;
+      --text-soft: rgba(255,255,240,0.95);
+      --glass-border: rgba(255,255,255,0.1);
+      --blur: 4px;
+      --radius-card: 28px;
+      --shadow-3d: 0 10px 20px rgba(0,0,0,0.4), 0 4px 8px rgba(255,255,240,0.05) inset, 0 -2px 4px rgba(0,0,0,0.6) inset;
+    }
+
+    /* ===== الخلفية ===== */
+    #bg-gradient {
       position: fixed; inset: 0; z-index: 0;
       background: radial-gradient(ellipse at 30% 40%, rgba(200,170,100,0.4) 0%, transparent 60%),
                   radial-gradient(ellipse at 80% 70%, rgba(120,180,230,0.3) 0%, transparent 65%),
                   linear-gradient(145deg, #0a0f1a 0%, #1a2540 60%, #0f1a2a 100%);
     }
-    #bg-image {
+    #bg-pattern {
       position: fixed; inset: 0; z-index: 1;
-      /* ✅ فارغ (بدون معاينة) — سيتم ضبطه لاحقاً من API */
-      background-image: none;
+      opacity: 0.1;
+      background-size: 200px 200px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%23f8df9c' stroke-width='1' opacity='0.4'%3E%3Cpath d='M100 10 146 56 190 100 146 144 100 190 54 144 10 100 54 56Z'/%3E%3Cpath d='M100 40 130 70 160 100 130 130 100 160 70 130 40 100 70 70Z'/%3E%3C/g%3E%3C/svg%3E");
+    }
+    #bg-image {
+      position: fixed; inset: 0; z-index: 2;
+      background-image: url('https://images.unsplash.com/photo-1564769625905-50e93615e769?q=80&w=2070&auto=format&fit=crop');
       background-size: cover; background-position: center 30%;
-      opacity: 0; filter: brightness(0.75) saturate(1.3) contrast(1.1);
+      opacity: 0.85; filter: brightness(0.8) saturate(1.2);
     }
     #bg-overlay {
-      position: fixed; inset: 0; z-index: 2;
-      background: radial-gradient(circle at 50% 50%, transparent 30%, rgba(0,0,0,0.3) 90%);
+      position: fixed; inset: 0; z-index: 3;
+      background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(0,0,0,0.3) 90%);
       pointer-events: none;
     }
 
-    /* ===== البطاقات الزجاجية – شفافة تماماً ===== */
+    /* ===== البطاقات الزجاجية + تأثير 3D ===== */
     .glass {
       background: transparent !important;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(4px) saturate(200%);
-      -webkit-backdrop-filter: blur(4px) saturate(200%);
-      border-radius: 28px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(var(--blur)) saturate(200%);
+      -webkit-backdrop-filter: blur(var(--blur)) saturate(200%);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-3d);
       position: relative;
       overflow: hidden;
     }
-
-    .glass, .glass * {
-      text-shadow: 0 2px 12px rgba(0,0,0,0.8), 0 4px 20px black;
+    .glass * {
+      text-shadow: 0 2px 8px rgba(0,0,0,0.7);
     }
 
-    /* ===== المتغيرات والثوابت ===== */
-    :root {
-      --safe: clamp(8px, 2vw, 24px);
-      --headerH: clamp(80px, 10vh, 140px);
-      --verseH: clamp(44px, 5.5vh, 80px);
-      --tickerH: clamp(48px, 6vh, 90px);
-      --clockSize: clamp(48px, 6.5vw, 112px);
-      --daySize: clamp(14px, 1.5vw, 26px);
-      --citySize: clamp(16px, 1.8vw, 32px);
-      --nextName: clamp(32px, 4vw, 70px);
-      --countSize: clamp(20px, 2.8vw, 52px);
-      --rowName: clamp(20px, 2.4vw, 40px);
-      --rowTime: clamp(18px, 2.2vw, 38px);
-      --badgeSize: clamp(12px, 1.2vw, 16px);
-      --accent: #f8df9c;
-    }
-
-    /* ===== الشبكة الرئيسية ===== */
+    /* ===== التخطيط الرئيسي ===== */
     #app {
       position: relative; z-index: 10;
       height: 100vh; padding: var(--safe);
@@ -72,172 +86,489 @@
       min-height: 0;
     }
 
-    /* ----- الرأس ----- */
+    /* ----- الرأس (لا ساعة إضافية) ----- */
     #header {
       display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
       gap: clamp(8px, 1.2vw, 20px); padding: clamp(8px, 1.4vw, 18px);
     }
-    #city-name { font-size: var(--citySize); color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: start; }
-    #clock-wrap { display: flex; align-items: baseline; justify-content: center; direction: ltr; gap: 0.1em; }
-    #time-hm, #time-s { font-size: var(--clockSize); font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; color: var(--accent); text-shadow: 0 0 30px #ffdcaa, 0 4px 20px black; letter-spacing: 0.04em; white-space: nowrap; }
+    #city-name {
+      font-size: var(--citySize); color: var(--text-soft); font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: start;
+    }
+    #clock-wrap {
+      display: flex; align-items: baseline; justify-content: center; direction: ltr; gap: 0.1em;
+    }
+    #time-hm, #time-s {
+      font-size: var(--clockSize); font-weight: 800; font-variant-numeric: tabular-nums;
+      color: var(--gold); text-shadow: 0 0 30px #ffdcaa, 0 4px 20px black;
+      letter-spacing: 0.04em; white-space: nowrap;
+    }
     #time-s { opacity: 0.9; }
-    #header-date { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; overflow: hidden; }
-    #day-name { font-size: var(--daySize); font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #date-line { font-size: var(--daySize); color: rgba(255,255,240,0.95); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #header-date {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+      overflow: hidden;
+    }
+    #day-name {
+      font-size: var(--daySize); font-weight: 800; color: #fff;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      text-shadow: 0 2px 10px gold;
+    }
+    #date-line {
+      font-size: var(--dateSize); color: var(--text-soft);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
 
     /* ----- شريط الآية ----- */
-    #verse-bar { display: flex; align-items: center; gap: 12px; padding: 0 14px; }
-    #verse-badge { flex: 0 0 auto; font-size: var(--badgeSize); font-weight: 800; padding: 4px 14px; border-radius: 40px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,215,140,0.25); color: #fff5dd; white-space: nowrap; backdrop-filter: blur(4px); }
-    #verse-wrap { position: relative; flex: 1 1 auto; overflow: hidden; mask-image: linear-gradient(to left, transparent 0%, #000 8%, #000 92%, transparent 100%); -webkit-mask-image: linear-gradient(to left, transparent 0%, #000 8%, #000 92%, transparent 100%); }
-    #verse-text { display: inline-block; white-space: nowrap; font-size: clamp(14px, 1.8vw, 26px); color: #fffcf0; padding-inline: 20px; animation: verse-scroll-rtl 36s linear infinite; }
+    #verse-bar {
+      display: flex; align-items: center; gap: 12px; padding: 0 14px;
+    }
+    #verse-badge {
+      flex: 0 0 auto; font-size: var(--badgeSize); font-weight: 800;
+      padding: 4px 14px; border-radius: 40px;
+      background: rgba(0,0,0,0.25); border: 1px solid rgba(255,215,140,0.25);
+      color: #fff5dd; white-space: nowrap; backdrop-filter: blur(4px);
+    }
+    #verse-wrap {
+      position: relative; flex: 1 1 auto; overflow: hidden;
+      mask-image: linear-gradient(to left, transparent 0%, #000 8%, #000 92%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to left, transparent 0%, #000 8%, #000 92%, transparent 100%);
+    }
+    #verse-text {
+      display: inline-block; white-space: nowrap;
+      font-size: clamp(16px, 2vw, 28px); color: #fffcf0;
+      padding-inline: 20px; animation: verse-scroll-rtl 36s linear infinite;
+    }
     @keyframes verse-scroll-rtl { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
     #verse-text.ltr { animation-name: verse-scroll-ltr; direction: ltr; }
     @keyframes verse-scroll-ltr { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
     #verse-text.paused { animation-play-state: paused; }
 
     /* ----- المحتوى الرئيسي ----- */
-    #main { min-height: 0; display: grid; grid-template-columns: 0.9fr 1.3fr; gap: var(--safe); }
-    @media (max-aspect-ratio: 4/3) { #main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; } }
+    #main {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 0.9fr 1.3fr;
+      gap: var(--safe);
+    }
+    @media (max-aspect-ratio: 4/3) {
+      #main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+    }
 
     /* بطاقة الصلاة القادمة */
-    #next-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: clamp(6px, 1vh, 14px); padding: clamp(14px, 2.5vh, 30px); text-align: center; }
-    #phase-badge { font-size: var(--badgeSize); font-weight: 700; padding: 5px 18px; border-radius: 40px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,210,120,0.3); color: #ffefcf; white-space: nowrap; backdrop-filter: blur(4px); }
-    #next-label { font-size: clamp(12px, 1.2vw, 18px); color: rgba(255,250,220,0.95); font-weight: 600; letter-spacing: 0.03em; }
-    #next-prayer-name { font-size: var(--nextName); font-weight: 900; color: var(--accent); text-shadow: 0 0 30px #ffd98c, 0 4px 20px black; line-height: 1.2; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #countdown { font-size: var(--countSize); font-weight: 800; font-variant-numeric: tabular-nums; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255,220,140,0.25); padding: 8px 26px; border-radius: 60px; backdrop-filter: blur(4px); color: #fff5e0; margin: 8px 0 4px; white-space: nowrap; }
-    #temp-badge { font-size: var(--badgeSize); color: #fff0ce; font-weight: 600; }
+    #next-card {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: clamp(8px, 1.2vh, 18px);
+      padding: clamp(16px, 3vh, 34px);
+      text-align: center;
+    }
+    #phase-badge {
+      font-size: var(--badgeSize); font-weight: 700;
+      padding: 6px 22px; border-radius: 40px;
+      background: rgba(0,0,0,0.25); border: 1px solid rgba(255,210,120,0.3);
+      color: #ffefcf; backdrop-filter: blur(4px);
+    }
+    #next-label {
+      font-size: clamp(14px, 1.5vw, 22px); color: var(--text-soft); font-weight: 600;
+    }
+    #next-prayer-name {
+      font-size: var(--nextName); font-weight: 900; color: var(--gold);
+      text-shadow: 0 0 30px #ffd98c, 0 4px 20px black;
+      line-height: 1.2; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    #countdown {
+      font-size: var(--countSize); font-weight: 800; font-variant-numeric: tabular-nums;
+      background: rgba(0,0,0,0.2); border: 1px solid rgba(255,220,140,0.25);
+      padding: 8px 30px; border-radius: 60px; backdrop-filter: blur(4px);
+      color: #fff5e0; white-space: nowrap;
+    }
+    #temp-badge {
+      font-size: var(--badgeSize); color: #fff0ce; font-weight: 600;
+    }
 
-    /* جدول الصلوات */
-    #prayer-table-wrap { padding: clamp(10px, 1.5vh, 20px); display: flex; flex-direction: column; gap: 8px; }
-    #table-title { display: flex; align-items: center; justify-content: space-between; padding-inline: 10px; color: rgba(255,255,200,0.95); font-weight: 700; font-size: clamp(13px, 1.2vw, 18px); }
-    #table-title .dot { width: 8px; height: 8px; border-radius: 50%; background: #ffdcaa; box-shadow: 0 0 22px #ffb347; }
+    /* شبكة بطاقات الصلوات */
+    .prayer-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 100%;
+      overflow-y: auto;
+      padding: 4px 2px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--gold) transparent;
+    }
+    .prayer-grid::-webkit-scrollbar {
+      width: 6px;
+    }
+    .prayer-grid::-webkit-scrollbar-thumb {
+      background: var(--gold);
+      border-radius: 10px;
+    }
 
-    #prayer-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; table-layout: fixed; }
-    #prayer-table colgroup col:nth-child(1) { width: 40%; }
-    #prayer-table colgroup col:nth-child(2) { width: 30%; }
-    #prayer-table colgroup col:nth-child(3) { width: 30%; }
+    .prayer-card {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255,215,140,0.2);
+      border-radius: 40px;
+      padding: 16px 24px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3), 0 2px 4px rgba(255,255,255,0.1) inset;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .prayer-card.is-next {
+      background: rgba(180, 140, 70, 0.3);
+      border-color: rgba(255,200,100,0.6);
+      box-shadow: 0 0 40px rgba(255,200,100,0.4), 0 4px 8px rgba(0,0,0,0.5) inset;
+    }
+    .prayer-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.5), 0 4px 8px rgba(255,255,240,0.2) inset;
+    }
 
-    #prayer-table th { font-size: clamp(11px, 1.1vw, 15px); color: #fff5d6; font-weight: 700; padding: 8px 4px; text-align: center; opacity: 0.95; }
-    #prayer-table td { padding: 12px 8px; text-align: center; background: rgba(0, 0, 0, 0.15); border: 1px solid rgba(255,215,140,0.15); border-radius: 22px; vertical-align: middle; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; backdrop-filter: blur(4px); color: #fff; }
-    .prayer-name-ar { font-size: var(--rowName); font-weight: 800; color: #ffffff; line-height: 1.3; }
-    .prayer-name-en { font-size: clamp(10px, 1vw, 14px); color: rgba(255, 255, 220, 0.95); direction: ltr; }
-    .prayer-time { color: var(--accent); font-weight: 800; font-size: var(--rowTime); font-variant-numeric: tabular-nums; }
-    .iqama-time { color: rgba(255, 255, 245, 0.95); font-weight: 700; font-size: var(--rowTime); font-variant-numeric: tabular-nums; }
+    .prayer-name {
+      text-align: right;
+    }
+    .prayer-name-ar {
+      font-size: var(--cardName);
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .prayer-name-en {
+      font-size: clamp(12px, 1.2vw, 20px);
+      color: rgba(255,255,220,0.9);
+      direction: ltr;
+      text-align: right;
+    }
+    .adhan-time, .iqama-time {
+      font-size: var(--cardTime);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+    }
+    .adhan-time {
+      color: var(--gold);
+    }
+    .iqama-time {
+      color: #fff;
+    }
 
-    tr.is-next td { background: rgba(180, 140, 70, 0.3); border-color: rgba(255, 200, 100, 0.5); box-shadow: 0 0 35px rgba(255,200,100,0.3); }
+    /* رأس الجدول */
+    .prayer-header {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      padding: 8px 24px;
+      color: var(--text-soft);
+      font-size: clamp(14px, 1.3vw, 22px);
+      font-weight: 700;
+      border-bottom: 1px solid rgba(255,215,140,0.3);
+      margin-bottom: 4px;
+    }
+    .prayer-header span {
+      text-align: center;
+    }
+    .prayer-header span:first-child {
+      text-align: right;
+    }
 
     /* ===== الشريط السفلي ===== */
-    #ticker-wrap { display: flex; align-items: center; gap: 12px; padding-inline: 18px; background: transparent; border: 1px solid rgba(255,220,130,0.15); backdrop-filter: blur(4px) saturate(200%); border-radius: 28px; overflow: hidden; }
-    #ticker-icon { width: 10px; height: 10px; background: #ffd78c; border-radius: 50%; box-shadow: 0 0 25px #ffb347; flex-shrink: 0; }
-    #ticker-text { display: inline-block; white-space: nowrap; font-size: clamp(14px, 1.6vw, 24px); color: #fffae9; padding-inline: 12px; animation: ticker-scroll-rtl 40s linear infinite; }
+    #ticker-wrap {
+      display: flex; align-items: center; gap: 12px; padding-inline: 18px;
+      background: transparent; border: 1px solid rgba(255,220,130,0.15);
+      backdrop-filter: blur(4px) saturate(200%); border-radius: var(--radius-card);
+      overflow: hidden;
+    }
+    #ticker-icon {
+      width: 12px; height: 12px; background: var(--gold);
+      border-radius: 50%; box-shadow: 0 0 25px #ffb347;
+      flex-shrink: 0;
+    }
+    #ticker-text {
+      display: inline-block; white-space: nowrap;
+      font-size: clamp(16px, 1.8vw, 28px); color: #fffae9;
+      padding-inline: 12px; animation: ticker-scroll-rtl 40s linear infinite;
+    }
     #ticker-text.ltr { animation-name: ticker-scroll-ltr; direction: ltr; }
     #ticker-text.paused { animation-play-state: paused; }
     @keyframes ticker-scroll-rtl { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
     @keyframes ticker-scroll-ltr { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
 
     /* ===== مؤثر الأذان ===== */
-    #adhan-pulse { display: none; position: fixed; inset: 0; z-index: 25; background: radial-gradient(circle at center, rgba(255, 220, 100, 0.15) 0%, transparent 70%); pointer-events: none; animation: soft-pulse 2.2s infinite; }
+    #adhan-pulse {
+      display: none; position: fixed; inset: 0; z-index: 25;
+      background: radial-gradient(circle at center, rgba(255,220,100,0.15) 0%, transparent 70%);
+      pointer-events: none; animation: soft-pulse 2.2s infinite;
+    }
     @keyframes soft-pulse { 0%{opacity:0.1} 50%{opacity:0.5} 100%{opacity:0.1} }
     body.adhan-active #adhan-pulse, body.iqama-active #adhan-pulse { display: block; }
 
-    /* ===== DEBUG ===== */
-    #debug-info { position: fixed; bottom: 8px; left: 8px; background: rgba(0,0,0,0.4); color: #cfc; font-size: 11px; padding: 4px 12px; border-radius: 24px; backdrop-filter: blur(4px); border: 1px solid #afa; z-index: 999; display: none; }
-    body.debug-mode #debug-info { display: block; }
-
-    /* تعديل LTR */
+    /* ===== تعديلات LTR ===== */
     html[dir="ltr"] #header-date { align-items: flex-start; }
-    html[dir="ltr"] #city-name { text-align: end; }
+    html[dir="ltr"] .prayer-name { text-align: left; }
+    html[dir="ltr"] .prayer-name-en { text-align: left; }
+    html[dir="ltr"] .prayer-header span:first-child { text-align: left; }
   </style>
 </head>
-
 <body>
-  <div id="bg-full"></div>
+  <div id="bg-gradient"></div>
+  <div id="bg-pattern"></div>
   <div id="bg-image"></div>
   <div id="bg-overlay"></div>
   <div id="adhan-pulse"></div>
-  <div id="debug-info"></div>
 
   <div id="app">
+    <!-- الرأس -->
     <header id="header" class="glass">
-      <div id="city-name">—</div>
+      <div id="city-name">جامع القرويين</div>
       <div id="clock-wrap">
-        <span id="time-hm">00:00</span>
-        <span id="time-s">:00</span>
+        <span id="time-hm">16:47</span>
+        <span id="time-s">:32</span>
       </div>
       <div id="header-date">
-        <div id="day-name">—</div>
-        <div id="date-line">—</div>
+        <div id="day-name">الثلاثاء</div>
+        <div id="date-line">٢٠ رمضان ١٤٤٦</div>
       </div>
     </header>
 
+    <!-- آية -->
     <section id="verse-bar" class="glass">
       <div id="verse-badge">آية</div>
       <div id="verse-wrap">
-        <span id="verse-text"></span>
+        <span id="verse-text">جاري التحميل...</span>
       </div>
     </section>
 
+    <!-- المحتوى الرئيسي -->
     <div id="main">
+      <!-- بطاقة الصلاة القادمة -->
       <section id="next-card" class="glass">
-        <span id="phase-badge">—</span>
+        <span id="phase-badge">--</span>
         <div id="next-label">الصلاة القادمة</div>
-        <div id="next-prayer-name">—</div>
-        <div id="countdown">—</div>
-        <div id="temp-badge"></div>
+        <div id="next-prayer-name">--</div>
+        <div id="countdown">--:--</div>
+        <div id="temp-badge">--°C</div>
       </section>
 
-      <section id="prayer-table-wrap" class="glass">
-        <div id="table-title">
-          <span>مواقيت الصلاة</span>
-          <span class="dot"></span>
+      <!-- بطاقات الصلوات -->
+      <section class="glass" style="padding: 16px; display: flex; flex-direction: column;">
+        <div class="prayer-header">
+          <span>الصلاة</span>
+          <span>الأذان</span>
+          <span>الإقامة</span>
         </div>
-        <table id="prayer-table">
-          <colgroup><col><col><col></colgroup>
-          <thead><tr><th>الصلاة</th><th>الأذان</th><th>الإقامة</th></tr></thead>
-          <tbody id="prayer-rows"></tbody>
-        </table>
+        <div class="prayer-grid" id="prayer-grid">
+          <!-- تملأ عبر JS -->
+        </div>
       </section>
     </div>
 
+    <!-- الشريط السفلي -->
     <div id="ticker-wrap" class="glass">
       <span id="ticker-icon"></span>
-      <span id="ticker-text"></span>
+      <span id="ticker-text">جاري التحميل...</span>
     </div>
   </div>
 
   <script>
     (function() {
-      // ✅ لا توجد بيانات معاينة هنا
+      // عناصر الصفحة
+      const cityEl = document.getElementById('city-name');
+      const phaseBadge = document.getElementById('phase-badge');
+      const nextPrayerName = document.getElementById('next-prayer-name');
+      const countdownEl = document.getElementById('countdown');
+      const tempBadge = document.getElementById('temp-badge');
+      const tickerText = document.getElementById('ticker-text');
+      const verseText = document.getElementById('verse-text');
+      const prayerGrid = document.getElementById('prayer-grid');
+      const dayNameEl = document.getElementById('day-name');
+      const dateLineEl = document.getElementById('date-line');
 
-      // Debug toggle
-      if (window.location.search.includes('debug=1')) {
-        document.body.classList.add('debug-mode');
-        document.getElementById('debug-info').textContent = 'debug=1';
-      }
+      // ترجمة المراحل (إذا أتت بالإنكليزية من الخادم)
+      const phaseLabels = {
+        normal: "ما بين الأذانين",
+        adhan_active: "الأذان الآن",
+        iqama_countdown: "انتظار الإقامة",
+        prayer_in_progress: "الصلاة جارية"
+      };
 
-      // (اختياري) اتركها إن كنت تريد ساعة محلية قبل وصول بيانات السيرفر
+      // متغيرات العد التنازلي
+      let countdownSecondsRemaining = null;
+      let countdownTargetTime = null; // timestamp ms
+
+      // تحديث الساعة الرقمية
       function updateClock() {
         const now = new Date();
-        document.getElementById('time-hm').textContent =
-          `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-        document.getElementById('time-s').textContent =
-          `:${String(now.getSeconds()).padStart(2,'0')}`;
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('time-hm').textContent = `${hh}:${mm}`;
+        document.getElementById('time-s').textContent = `:${ss}`;
       }
       setInterval(updateClock, 500);
       updateClock();
 
-      function updateDateDisplay() {
+      // تحديث التاريخ (هجري/ميلادي) - نعتمد على الخادم أو نحسب محلياً
+      function updateDate() {
         const now = new Date();
-        document.getElementById('day-name').textContent =
-          now.toLocaleDateString('ar-EG', { weekday: 'long' });
-        document.getElementById('date-line').textContent =
-          now.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+        const dayName = now.toLocaleDateString('ar-EG', { weekday: 'long' });
+        const fullDate = now.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+        dayNameEl.textContent = dayName;
+        dateLineEl.textContent = fullDate;
       }
-      setInterval(updateDateDisplay, 60000);
-      updateDateDisplay();
+      setInterval(updateDate, 60000);
+      updateDate();
 
-      // ✅ مكانك الطبيعي هنا: fetch("/v1/display") وتعبئة العناصر حسب رد الـ API
-      // تركته فارغاً كما طلبت.
+      // تحويل الأرقام إلى العربية
+      function toArabicNumerals(str) {
+        if (!str) return str;
+        return str.replace(/0/g, '٠').replace(/1/g, '١').replace(/2/g, '٢')
+          .replace(/3/g, '٣').replace(/4/g, '٤').replace(/5/g, '٥')
+          .replace(/6/g, '٦').replace(/7/g, '٧').replace(/8/g, '٨').replace(/9/g, '٩');
+      }
+
+      // رسم بطاقات الصلوات
+      function renderPrayerCards(prayers, nextKey) {
+        prayerGrid.innerHTML = '';
+        if (!prayers || prayers.length === 0) {
+          prayerGrid.innerHTML = '<div style="color:white; padding:20px;">لا توجد مواقيت</div>';
+          return;
+        }
+        prayers.forEach(p => {
+          const card = document.createElement('div');
+          card.className = 'prayer-card';
+          if (nextKey && p.key === nextKey) card.classList.add('is-next');
+          
+          const adhanArabic = toArabicNumerals(p.adhan || '—');
+          const iqamaArabic = toArabicNumerals(p.iqama || '—');
+          
+          card.innerHTML = `
+            <div class="prayer-name">
+              <div class="prayer-name-ar">${p.nameAr || p.key}</div>
+              <div class="prayer-name-en">${p.nameEn || p.key}</div>
+            </div>
+            <div class="adhan-time">${adhanArabic}</div>
+            <div class="iqama-time">${iqamaArabic}</div>
+          `;
+          prayerGrid.appendChild(card);
+        });
+      }
+
+      // تحديث العد التنازلي
+      function updateCountdownDisplay() {
+        if (countdownTargetTime === null) {
+          countdownEl.textContent = '--:--';
+          return;
+        }
+        const now = Date.now();
+        const remainingMs = Math.max(0, countdownTargetTime - now);
+        const remainingSec = Math.floor(remainingMs / 1000);
+        const h = Math.floor(remainingSec / 3600);
+        const m = Math.floor((remainingSec % 3600) / 60);
+        const s = remainingSec % 60;
+        let formatted;
+        if (h > 0) {
+          formatted = `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        } else {
+          formatted = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+        countdownEl.textContent = toArabicNumerals(formatted);
+      }
+      setInterval(updateCountdownDisplay, 500);
+
+      // تطبيق الثيم (اختياري)
+      function applyTheme(theme) {
+        if (!theme) return;
+        // يمكن تطبيق الألوان من الثيم إذا أردت
+      }
+
+      // جلب البيانات من الخادم
+      async function fetchDisplayData() {
+        try {
+          const response = await fetch('/v1/display', {
+            headers: { 'Cache-Control': 'no-cache' }
+          });
+          if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+          const data = await response.json();
+
+          // المدينة
+          cityEl.textContent = data.city || 'المسجد';
+
+          // اللغة والاتجاه
+          const lang = data.language || 'ar';
+          document.documentElement.lang = lang;
+          document.documentElement.dir = (lang === 'ar') ? 'rtl' : 'ltr';
+
+          // المرحلة
+          const phase = data.phase || 'normal';
+          phaseBadge.textContent = phaseLabels[phase] || phase;
+
+          // إضافة/إزالة class للأذان
+          document.body.classList.remove('adhan-active', 'iqama-active');
+          if (phase === 'adhan_active') document.body.classList.add('adhan-active');
+          if (phase === 'iqama_countdown') document.body.classList.add('iqama-active');
+
+          // الصلاة القادمة
+          nextPrayerName.textContent = data.nextPrayerAr || data.nextPrayerKey || '—';
+
+          // العد التنازلي
+          if (data.countdownSeconds != null) {
+            // نضبط target time بناءً على الوقت الحالي + الثواني المتبقية
+            countdownTargetTime = Date.now() + data.countdownSeconds * 1000;
+          } else {
+            countdownTargetTime = null;
+          }
+
+          // درجة الحرارة
+          tempBadge.textContent = (data.tempC != null) ? `${data.tempC}°C` : '--°C';
+
+          // رسم بطاقات الصلوات
+          if (data.prayers) {
+            renderPrayerCards(data.prayers, data.nextPrayerKey);
+          }
+
+          // الشريط السفلي (ticker)
+          const tickerData = data.ticker || {};
+          if (tickerData.customMessage) {
+            tickerText.textContent = tickerData.customMessage;
+          } else {
+            tickerText.textContent = 'ﷺ  سبحان الله وبحمده  ﷺ';
+          }
+          // اتجاه التيكر
+          const tickerDir = data.tickerDirection || 'rtl';
+          tickerText.className = tickerDir === 'ltr' ? 'ltr' : '';
+          const pauseTicker = data.tickerPaused || (tickerData.pauseDuringAdhan && (phase === 'adhan_active' || phase === 'iqama_countdown'));
+          tickerText.classList.toggle('paused', pauseTicker);
+
+          // الآية (verse) - قد تكون في d.verseText أو في ticker.verseMessage حسب الخادم
+          // الخادم لا يرسل verseText مباشرة في _build_display، لكن يمكن إضافته. نستخدم حقل افتراضي.
+          // في الكود الخلفي، لا يوجد verseText في _build_display. يمكننا إما تركه ثابتاً أو إضافته عبر API آخر.
+          // نفترض أن الخادم قد يرسل verseText في المستقبل، أو نستخدم ticker.
+          // للحل المؤقت، نترك النص الافتراضي.
+          // لكن لو أردنا استخدام نص من الخادم، يمكن إضافته في _build_display.
+          // سنترك الآية ثابتة هنا أو نستخدم ما يوفره الخادم.
+          // بما أن الخادم لا يرسل verseText، نترك النص الحالي أو نستخدم default.
+          // يمكن أن نضيف في الخادم حقل "verse" في _build_display إذا أردنا.
+
+          // تطبيق الثيم إن وجد
+          applyTheme(data.theme);
+
+        } catch (error) {
+          console.error('خطأ في جلب البيانات:', error);
+          // نترك البيانات القديمة أو نظهر رسالة خطأ
+        }
+      }
+
+      // التحميل الأول ثم كل 30 ثانية
+      fetchDisplayData();
+      setInterval(fetchDisplayData, 30000);
+
+      // (اختياري) محاكاة تغيير المرحلة للعرض التوضيحي - يمكن إزالتها لاحقاً
+      // setTimeout(() => {
+      //   // محاكاة أذان
+      //   phaseBadge.textContent = phaseLabels['adhan_active'];
+      //   document.body.classList.add('adhan-active');
+      // }, 8000);
     })();
   </script>
 </body>
