@@ -16,7 +16,7 @@
       --topH:    10vh;
       --mainH:   18vh;
       --tableH:  1fr;
-      --tickerH: 6vh;
+      --tickerH: clamp(64px, 7vh, 110px);
 
       /* Theme colours */
       --bg:           #0d1117;
@@ -25,9 +25,22 @@
       --text-dim:     #a0927a;
       --accent:       #e8c86d;
       --adhan-glow:   #e8c86d;
-      --glass-bg:     rgba(255,255,255,0.06);
-      --glass-border: rgba(255,255,255,0.12);
+
+      /* Glass system */
+      --glass-alpha:        0.12;
+      --glass-blur:         24px;
+      --glass-border-alpha: 0.18;
+      --glass-bg:     rgba(255,255,255,var(--glass-alpha));
+      --glass-border: rgba(255,255,255,var(--glass-border-alpha));
       --glass-shadow: 0 4px 24px rgba(0,0,0,0.32), 0 1px 4px rgba(0,0,0,0.20);
+
+      /* Typography scale */
+      --timeSize:     clamp(44px, 6vw, 120px);
+      --secSize:      clamp(18px, 2.2vw, 44px);
+      --daySize:      clamp(14px, 1.6vw, 32px);
+      --prayerNameAr: clamp(18px, 2.6vw, 44px);
+      --prayerTime:   clamp(16px, 2.2vw, 38px);
+
       --bg-overlay-opacity: 0.22;
       --radius:       12px;
     }
@@ -37,7 +50,7 @@
       :root {
         --topH:    10vh;
         --mainH:   18vh;
-        --tickerH: 6vh;
+        --tickerH: clamp(64px, 7vh, 110px);
       }
     }
 
@@ -46,7 +59,7 @@
       :root {
         --topH:    10vh;
         --mainH:   18vh;
-        --tickerH: 6vh;
+        --tickerH: clamp(64px, 7vh, 110px);
       }
     }
 
@@ -56,7 +69,14 @@
         --safe:    clamp(4px, 1vw, 12px);
         --topH:    10vh;
         --mainH:   18vh;
-        --tickerH: 6vh;
+        --tickerH: clamp(64px, 7vh, 110px);
+      }
+      /* Stack header and next-card vertically in portrait */
+      #app {
+        grid-template-rows: auto var(--tableH) var(--tickerH);
+      }
+      #top-row {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -101,10 +121,10 @@
 
     /* ── Glass panel mixin ───────────────────────────── */
     .glass {
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-      backdrop-filter: blur(22px);
-      -webkit-backdrop-filter: blur(22px);
+      background: rgba(255,255,255,var(--glass-alpha));
+      border: 1px solid rgba(255,255,255,var(--glass-border-alpha));
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
       border-radius: var(--radius);
       box-shadow: var(--glass-shadow);
     }
@@ -146,18 +166,20 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      text-align: right;
+      text-align: start;
     }
-    /* Clock wrap – column 2 = center */
+    /* ── Clock wrap – column 2 = center ── */
     #clock-wrap {
       display: flex;
       align-items: baseline;
       justify-content: center;
       flex-shrink: 0;
       gap: 0;
+      /* Force LTR so seconds always appear on the right of HH:MM regardless of page direction */
+      direction: ltr;
     }
     #time-hm {
-      font-size: clamp(54px, 7vw, 120px);
+      font-size: var(--timeSize);
       font-weight: 700;
       letter-spacing: .04em;
       color: var(--accent);
@@ -166,8 +188,7 @@
       line-height: 1;
     }
     #time-s {
-      /* 0.55 × #time-hm size: clamp(30px, 7vw*0.55=3.85vw, 120px*0.55=66px) */
-      font-size: clamp(30px, 3.85vw, 66px);
+      font-size: var(--secSize);
       font-weight: 500;
       color: var(--accent);
       opacity: 0.55;
@@ -186,7 +207,7 @@
       align-items: flex-end;
     }
     #day-name {
-      font-size: clamp(14px, 1.6vw, 28px);
+      font-size: var(--daySize);
       color: var(--text);
       font-weight: 600;
       white-space: nowrap;
@@ -195,7 +216,7 @@
       line-height: 1.2;
     }
     #date-line {
-      font-size: clamp(14px, 1.6vw, 28px);
+      font-size: var(--daySize);
       color: var(--text-dim);
       white-space: nowrap;
       overflow: hidden;
@@ -279,7 +300,7 @@
     #prayer-table td {
       padding: clamp(5px, 0.9vh, 13px) clamp(6px, 1vw, 14px);
       text-align: center;
-      font-size: clamp(18px, 2.0vw, 36px);
+      font-size: var(--prayerTime);
       background: rgba(255,255,255,0.05);
       border-top: 1px solid rgba(255,255,255,0.07);
       border-bottom: 1px solid rgba(255,255,255,0.07);
@@ -300,7 +321,7 @@
       border-end-end-radius: var(--radius);
     }
     .prayer-name-ar {
-      font-size: clamp(22px, 2.6vw, 44px);
+      font-size: var(--prayerNameAr);
       font-weight: 700;
       color: var(--text);
       direction: rtl;
@@ -318,12 +339,12 @@
     .prayer-time {
       color: var(--accent);
       font-variant-numeric: tabular-nums;
-      font-size: clamp(18px, 2.0vw, 36px);
+      font-size: var(--prayerTime);
       font-weight: 600;
     }
     .iqama-time {
       color: var(--text-dim);
-      font-size: clamp(18px, 2.0vw, 36px);
+      font-size: var(--prayerTime);
     }
 
     /* ── TickerBar ───────────────────────────────────── */
@@ -331,14 +352,14 @@
       position: relative;
       overflow: hidden;
       background: rgba(201,168,76,.08);
-      border: 1px solid rgba(201,168,76,.2);
-      backdrop-filter: blur(22px);
-      -webkit-backdrop-filter: blur(22px);
+      border: 1px solid rgba(201,168,76,.22);
+      backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
       border-radius: var(--radius);
       box-shadow: var(--glass-shadow);
       display: flex;
       align-items: center;
-      z-index: 15;
+      z-index: 50;
       grid-row: 3;
     }
     #ticker-text {
@@ -366,6 +387,10 @@
       from { transform: translateX(100%); }
       to   { transform: translateX(-100%); }
     }
+
+    /* ── LTR layout: swap top-row children so NextPrayer=left, Clock=right ── */
+    html[dir="ltr"] #top-row #header    { order: 2; }
+    html[dir="ltr"] #top-row #next-card { order: 1; }
 
     /* ── Adhan glow overlay ──────────────────────────── */
     #adhan-overlay {
@@ -496,12 +521,17 @@
     const phase = payload ? (payload.phase || "normal") : "—";
     const paused = (tickerData.pauseDuringAdhan || (payload && payload.tickerPaused)) &&
                    (phase === "adhan_active" || phase === "iqama_countdown");
+    const tickerH = ticker.offsetHeight;
+    const tickerStyle = getComputedStyle(ticker);
+    const tickerVisible = tickerH > 0 && tickerStyle.display !== "none"
+                          && tickerStyle.visibility !== "hidden";
     document.getElementById("debug-info").innerHTML = [
       `Profile: ${profile} (${window.innerWidth}×${window.innerHeight}, AR ${aspectRatio.toFixed(2)})`,
+      `Dir:     ${document.documentElement.dir}`,
       `TopBar:  ${header.offsetHeight}px`,
       `Main:    ${nextCard.offsetHeight}px`,
       `Table:   ${tableWrap.offsetHeight}px`,
-      `Ticker:  ${ticker.offsetHeight}px`,
+      `Ticker:  ${tickerH}px  ${tickerVisible ? "✓ visible" : "✗ HIDDEN"}`,
       `Phase:   ${phase}`,
       `Ticker paused: ${paused ? "YES" : "no"}`,
       `Msg: ${tickerData.customMessage || "(default)"}`,
@@ -639,6 +669,12 @@
 
       // City
       document.getElementById("city-name").textContent = d.city || "";
+
+      // Language / direction
+      const lang = d.language || d.displayLanguage || "";
+      const isRtl = !lang || lang === "ar";
+      document.documentElement.lang = lang || "ar";
+      document.documentElement.dir  = isRtl ? "rtl" : "ltr";
 
       // Phase
       const phase = d.phase || "normal";
