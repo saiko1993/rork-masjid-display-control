@@ -25,6 +25,14 @@ It stores state on disk, serves a kiosk HTML display page, and runs as a `system
 - Python **3.9+** (ships with Pi OS)
 - Network connection (LAN or Wi-Fi)
 
+> **Tip — pip behind a proxy or corporate network:**  
+> If `pip install` fails due to proxy restrictions, either configure the proxy
+> (`pip install --proxy http://proxy.example.com:8080 -r requirements.txt`) or
+> install the system packages directly with `apt`:
+> ```bash
+> sudo apt-get install python3-fastapi python3-uvicorn python3-aiofiles
+> ```
+
 ---
 
 ## Setup on Raspberry Pi
