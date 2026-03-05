@@ -1,0 +1,19 @@
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# macOS
+.DS_Store
+
+# Runtime-generated storage (state JSON files)
+storage/*.json
+
+# Uploaded background images (runtime directory)
+uploads/
+
+# Virtual environments
+venv/
+.venv/
+env/

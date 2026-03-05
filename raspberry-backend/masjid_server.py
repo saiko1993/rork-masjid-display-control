@@ -394,11 +394,15 @@ async def post_ticker(request: Request, _: None = Depends(auth)):
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid JSON body")
     message = payload.get("message", "")
-    state = await get_state()
-    ticker = dict(state.get("ticker") or {})
-    ticker["customMessage"] = message
-    ticker["mode"] = "custom"
-    await update_state({"ticker": ticker})
+    # Read-modify-write must happen atomically under the state lock to avoid
+    # a TOCTOU race where a concurrent writer overwrites fields modified here.
+    async with _state_lock:
+        state = await load_state()
+        ticker = dict(state.get("ticker") or {})
+        ticker["customMessage"] = message
+        ticker["mode"] = "custom"
+        state["ticker"] = ticker
+        await save_state(state)
     return {"status": "ok"}
 
 
