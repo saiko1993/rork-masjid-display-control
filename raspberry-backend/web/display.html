@@ -12,11 +12,11 @@
     /* ── Layout variables – Standard default (4:3 – 16:10) ── */
     :root {
       /* Layout zones */
-      --safe:    clamp(8px, 1.5vw, 20px);
-      --topH:    13vh;
-      --mainH:   22vh;
+      --safe:    clamp(10px, 2vw, 28px);
+      --topH:    10vh;
+      --mainH:   14vh;
       --tableH:  1fr;
-      --tickerH: 8vh;
+      --tickerH: 6vh;
 
       /* Theme colours */
       --bg:           #0d1117;
@@ -25,26 +25,26 @@
       --text-dim:     #a0927a;
       --accent:       #e8c86d;
       --adhan-glow:   #e8c86d;
-      --glass-bg:     rgba(255,255,255,0.06);
-      --glass-border: rgba(255,255,255,0.12);
+      --glass-bg:     rgba(255,255,255,0.03);
+      --glass-border: rgba(255,255,255,0.08);
       --radius:       12px;
     }
 
     /* ── Wide: ≥ 16:10 (covers 1920×1080, 1366×768, 1024×600, 800×480) ── */
     @media (min-aspect-ratio: 16/10) {
       :root {
-        --topH:    12vh;
-        --mainH:   20vh;
-        --tickerH: 7vh;
+        --topH:    10vh;
+        --mainH:   14vh;
+        --tickerH: 6vh;
       }
     }
 
     /* ── Standard: 4:3 – 16:10 ───────────────────────── */
     @media (min-aspect-ratio: 4/3) and (max-aspect-ratio: 16/10) {
       :root {
-        --topH:    13vh;
-        --mainH:   22vh;
-        --tickerH: 8vh;
+        --topH:    10vh;
+        --mainH:   14vh;
+        --tickerH: 6vh;
       }
     }
 
@@ -53,8 +53,8 @@
       :root {
         --safe:    clamp(4px, 1vw, 12px);
         --topH:    10vh;
-        --mainH:   20vh;
-        --tickerH: 7vh;
+        --mainH:   14vh;
+        --tickerH: 6vh;
       }
     }
 
@@ -93,18 +93,25 @@
     .glass {
       background: var(--glass-bg);
       border: 1px solid var(--glass-border);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
       border-radius: var(--radius);
     }
 
-    /* ── Main 4-zone grid layout ─────────────────────── */
+    /* ── Main 3-zone grid layout ─────────────────────── */
     #app {
       position: relative; z-index: 10;
       display: grid;
-      grid-template-rows: var(--topH) var(--mainH) var(--tableH) var(--tickerH);
+      grid-template-rows: var(--mainH) var(--tableH) var(--tickerH);
       height: 100vh;
       padding: var(--safe);
+      gap: var(--safe);
+    }
+
+    /* ── Top row: TopBar + MainPanel side by side ─────── */
+    #top-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: var(--safe);
     }
 
@@ -128,7 +135,7 @@
       text-overflow: ellipsis;
     }
     #clock {
-      font-size: clamp(22px, 4.2vw, 58px);
+      font-size: clamp(40px, 6vw, 96px);
       font-weight: 700;
       letter-spacing: .04em;
       color: var(--accent);
@@ -172,7 +179,7 @@
       color: var(--text-dim);
     }
     #next-prayer-name {
-      font-size: clamp(20px, 3.8vw, 54px);
+      font-size: clamp(36px, 4vw, 72px);
       font-weight: 700;
       color: var(--accent);
       line-height: 1.1;
@@ -183,7 +190,7 @@
       text-align: center;
     }
     #countdown {
-      font-size: clamp(16px, 2.8vw, 46px);
+      font-size: clamp(28px, 3vw, 56px);
       font-variant-numeric: tabular-nums;
       color: var(--text);
       white-space: nowrap;
@@ -237,7 +244,7 @@
       border-end-end-radius: var(--radius);
     }
     .prayer-name-ar {
-      font-size: clamp(14px, 1.9vw, 26px);
+      font-size: clamp(20px, 2vw, 32px);
       font-weight: 700;
       color: var(--text);
       direction: rtl;
@@ -251,12 +258,12 @@
     .prayer-time {
       color: var(--accent);
       font-variant-numeric: tabular-nums;
-      font-size: clamp(14px, 1.7vw, 24px);
+      font-size: clamp(18px, 2vw, 30px);
       font-weight: 600;
     }
     .iqama-time {
       color: var(--text-dim);
-      font-size: clamp(12px, 1.4vw, 20px);
+      font-size: clamp(18px, 2vw, 30px);
     }
 
     /* ── TickerBar ───────────────────────────────────── */
@@ -271,6 +278,7 @@
       display: flex;
       align-items: center;
       z-index: 15;
+      grid-row: 3;
     }
     #ticker-text {
       display: inline-block;
@@ -320,6 +328,7 @@
       pointer-events: none;
     }
     body.debug-mode #debug-overlay  { display: block; }
+    body.debug-mode #top-row        { outline: 2px solid rgba(255,165,0,0.8); }
     body.debug-mode #header         { outline: 2px solid rgba(255,80,80,0.8); }
     body.debug-mode #next-card      { outline: 2px solid rgba(80,255,80,0.8); }
     body.debug-mode #prayer-table-wrap { outline: 2px solid rgba(80,160,255,0.8); }
@@ -352,24 +361,29 @@
     <div id="debug-info">…</div>
   </div>
 
-  <!-- 4-zone grid layout -->
+  <!-- 3-zone grid layout -->
   <div id="app">
 
-    <!-- Zone 1: TopBar -->
-    <header id="header" class="glass">
-      <div id="city-name">—</div>
-      <div id="clock">00:00:00</div>
-      <div id="date-line">—</div>
-    </header>
+    <!-- Zone 1: TopBar + MainPanel (side by side) -->
+    <div id="top-row">
 
-    <!-- Zone 2: MainPanel – next prayer + countdown -->
-    <section id="next-card" class="glass">
-      <span id="phase-badge">loading…</span>
-      <div id="next-label">الصلاة القادمة</div>
-      <div id="next-prayer-name">—</div>
-      <div id="countdown">—</div>
-      <div id="temp-badge"></div>
-    </section>
+      <!-- TopBar: clock · city · date -->
+      <header id="header" class="glass">
+        <div id="city-name">—</div>
+        <div id="clock">00:00:00</div>
+        <div id="date-line">—</div>
+      </header>
+
+      <!-- MainPanel – next prayer + countdown -->
+      <section id="next-card" class="glass">
+        <span id="phase-badge">loading…</span>
+        <div id="next-label">الصلاة القادمة</div>
+        <div id="next-prayer-name">—</div>
+        <div id="countdown">—</div>
+        <div id="temp-badge"></div>
+      </section>
+
+    </div><!-- #top-row -->
 
     <!-- Zone 3: PrayerTable -->
     <div id="prayer-table-wrap" class="glass">
