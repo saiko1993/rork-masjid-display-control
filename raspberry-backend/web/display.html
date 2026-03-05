@@ -6,21 +6,59 @@
   <title>Masjid Display</title>
   <link rel="stylesheet" href="/assets/focusRing.css" />
   <style>
-    /* ── Reset & root ─────────────────────────────────── */
+    /* ── Reset ────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* ── Layout variables – Standard default (4:3 – 16:10) ── */
     :root {
-      --bg:         #0d1117;
-      --surface:    #161b22;
-      --primary:    #c9a84c;
-      --text:       #f0e6d3;
-      --text-dim:   #a0927a;
-      --accent:     #e8c86d;
-      --adhan-glow: #e8c86d;
-      --radius:     12px;
-      --padding:    clamp(8px, 2vw, 24px);
+      /* Layout zones */
+      --safe:    clamp(8px, 1.5vw, 20px);
+      --topH:    13vh;
+      --mainH:   22vh;
+      --tableH:  1fr;
+      --tickerH: 8vh;
+
+      /* Theme colours */
+      --bg:           #0d1117;
+      --primary:      #c9a84c;
+      --text:         #f0e6d3;
+      --text-dim:     #a0927a;
+      --accent:       #e8c86d;
+      --adhan-glow:   #e8c86d;
+      --glass-bg:     rgba(255,255,255,0.06);
+      --glass-border: rgba(255,255,255,0.12);
+      --radius:       12px;
     }
 
+    /* ── Wide: ≥ 16:10 (covers 1920×1080, 1366×768, 1024×600, 800×480) ── */
+    @media (min-aspect-ratio: 16/10) {
+      :root {
+        --topH:    12vh;
+        --mainH:   20vh;
+        --tickerH: 7vh;
+      }
+    }
+
+    /* ── Standard: 4:3 – 16:10 ───────────────────────── */
+    @media (min-aspect-ratio: 4/3) and (max-aspect-ratio: 16/10) {
+      :root {
+        --topH:    13vh;
+        --mainH:   22vh;
+        --tickerH: 8vh;
+      }
+    }
+
+    /* ── Portrait / Small: narrower than 4:3 ─────────── */
+    @media (max-aspect-ratio: 4/3) {
+      :root {
+        --safe:    clamp(4px, 1vw, 12px);
+        --topH:    10vh;
+        --mainH:   20vh;
+        --tickerH: 7vh;
+      }
+    }
+
+    /* ── Base ────────────────────────────────────────── */
     html, body {
       width: 100%; height: 100%;
       overflow: hidden;
@@ -29,7 +67,7 @@
       font-family: 'Segoe UI', system-ui, sans-serif;
     }
 
-    /* ── Background layers ────────────────────────────── */
+    /* ── Background layers ───────────────────────────── */
     #bg-gradient {
       position: fixed; inset: 0; z-index: 0;
       background: linear-gradient(160deg, #0d1117 0%, #1a2236 55%, #0d1117 100%);
@@ -43,6 +81,7 @@
     #bg-vignette {
       position: fixed; inset: 0; z-index: 2;
       background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,.65) 100%);
+      transition: opacity 0.5s;
     }
     #bg-image {
       position: fixed; inset: 0; z-index: 1;
@@ -50,137 +89,216 @@
       opacity: 0; transition: opacity 1s;
     }
 
-    /* ── Layout ───────────────────────────────────────── */
+    /* ── Glass panel mixin ───────────────────────────── */
+    .glass {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-radius: var(--radius);
+    }
+
+    /* ── Main 4-zone grid layout ─────────────────────── */
     #app {
       position: relative; z-index: 10;
       display: grid;
-      grid-template-rows: auto 1fr auto auto;
+      grid-template-rows: var(--topH) var(--mainH) var(--tableH) var(--tickerH);
       height: 100vh;
-      padding: var(--padding);
-      gap: var(--padding);
+      padding: var(--safe);
+      gap: var(--safe);
     }
 
-    /* ── Header: city + date + clock ─────────────────── */
+    /* ── TopBar: clock · city · date ─────────────────── */
     #header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
+      flex-wrap: nowrap;
+      gap: clamp(6px, 1vw, 16px);
+      padding: 0 clamp(10px, 1.5vw, 20px);
+      overflow: hidden;
     }
     #city-name {
-      font-size: clamp(14px, 2.2vw, 28px);
+      font-size: clamp(12px, 1.6vw, 22px);
       color: var(--text-dim);
       font-weight: 600;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     #clock {
-      font-size: clamp(28px, 5vw, 72px);
+      font-size: clamp(22px, 4.2vw, 58px);
       font-weight: 700;
       letter-spacing: .04em;
       color: var(--accent);
       font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     #date-line {
-      font-size: clamp(11px, 1.4vw, 18px);
+      font-size: clamp(10px, 1.1vw, 15px);
       color: var(--text-dim);
+      flex: 1;
+      text-align: start;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    /* ── Next prayer card ─────────────────────────────── */
+    /* ── MainPanel: next prayer + countdown ──────────── */
     #next-card {
-      background: var(--surface);
-      border-radius: var(--radius);
-      padding: clamp(10px, 2vw, 28px);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      border: 1px solid rgba(201,168,76,.2);
+      gap: clamp(2px, 0.4vh, 6px);
+      padding: 0 clamp(10px, 2vw, 28px);
+      overflow: hidden;
     }
     #phase-badge {
-      font-size: clamp(10px, 1.2vw, 14px);
+      font-size: clamp(9px, 0.9vw, 13px);
       text-transform: uppercase;
       letter-spacing: .12em;
-      padding: 4px 12px;
+      padding: 3px 10px;
       border-radius: 999px;
       background: rgba(201,168,76,.15);
       color: var(--primary);
       font-weight: 600;
+      white-space: nowrap;
     }
     #next-label {
-      font-size: clamp(11px, 1.3vw, 16px);
+      font-size: clamp(10px, 1vw, 14px);
       color: var(--text-dim);
     }
     #next-prayer-name {
-      font-size: clamp(22px, 4.5vw, 64px);
+      font-size: clamp(20px, 3.8vw, 54px);
       font-weight: 700;
       color: var(--accent);
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 90%;
+      text-align: center;
     }
     #countdown {
-      font-size: clamp(18px, 3.5vw, 52px);
+      font-size: clamp(16px, 2.8vw, 46px);
       font-variant-numeric: tabular-nums;
       color: var(--text);
+      white-space: nowrap;
     }
     #temp-badge {
-      font-size: clamp(10px, 1.2vw, 14px);
+      font-size: clamp(9px, 0.9vw, 13px);
       color: var(--text-dim);
     }
 
-    /* ── Prayer table ─────────────────────────────────── */
+    /* ── PrayerTable wrapper ─────────────────────────── */
+    #prayer-table-wrap {
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(4px, 0.6vh, 10px) clamp(6px, 1vw, 14px);
+    }
+
+    /* ── PrayerTable ─────────────────────────────────── */
     #prayer-table {
       width: 100%;
       border-collapse: separate;
-      border-spacing: 0 4px;
+      border-spacing: 0 clamp(2px, 0.35vh, 5px);
+      table-layout: fixed;
+      flex: 1;
     }
     #prayer-table th {
-      font-size: clamp(9px, 1vw, 13px);
+      font-size: clamp(9px, 0.9vw, 13px);
       color: var(--text-dim);
       font-weight: 500;
-      padding: 4px 8px;
+      padding: clamp(2px, 0.4vh, 5px) 8px;
       text-align: center;
     }
     #prayer-table td {
-      padding: clamp(4px, 0.8vw, 10px) clamp(6px, 1vw, 14px);
+      padding: clamp(5px, 0.9vh, 13px) clamp(6px, 1vw, 14px);
       text-align: center;
-      font-size: clamp(12px, 1.6vw, 20px);
-      background: var(--surface);
+      font-size: clamp(13px, 1.7vw, 22px);
+      background: rgba(255,255,255,0.05);
+      border-top: 1px solid rgba(255,255,255,0.07);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      vertical-align: middle;
     }
-    #prayer-table tr td:first-child { border-radius: var(--radius) 0 0 var(--radius); }
-    #prayer-table tr td:last-child  { border-radius: 0 var(--radius) var(--radius) 0; }
-    .prayer-name-ar { font-size: clamp(13px, 1.8vw, 22px); font-weight: 600; color: var(--text); }
-    .prayer-name-en { font-size: clamp(9px,  1.1vw, 14px); color: var(--text-dim); }
-    .prayer-time    { color: var(--accent); font-variant-numeric: tabular-nums; }
-    .iqama-time     { color: var(--text-dim); font-size: .85em; }
+    /* Use logical properties so RTL/LTR outer borders are automatic */
+    #prayer-table tr td:first-child {
+      border-inline-start: 1px solid rgba(255,255,255,0.07);
+      border-start-start-radius: var(--radius);
+      border-end-start-radius: var(--radius);
+    }
+    #prayer-table tr td:last-child {
+      border-inline-end: 1px solid rgba(255,255,255,0.07);
+      border-start-end-radius: var(--radius);
+      border-end-end-radius: var(--radius);
+    }
+    .prayer-name-ar {
+      font-size: clamp(14px, 1.9vw, 26px);
+      font-weight: 700;
+      color: var(--text);
+      direction: rtl;
+      line-height: 1.2;
+    }
+    .prayer-name-en {
+      font-size: clamp(9px, 0.9vw, 13px);
+      color: var(--text-dim);
+      direction: ltr;
+    }
+    .prayer-time {
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(14px, 1.7vw, 24px);
+      font-weight: 600;
+    }
+    .iqama-time {
+      color: var(--text-dim);
+      font-size: clamp(12px, 1.4vw, 20px);
+    }
 
-    /* ── Ticker ───────────────────────────────────────── */
+    /* ── TickerBar ───────────────────────────────────── */
     #ticker-wrap {
+      position: relative;
       overflow: hidden;
       background: rgba(201,168,76,.08);
+      border: 1px solid rgba(201,168,76,.2);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-radius: var(--radius);
-      padding: 6px 0;
-      position: relative;
+      display: flex;
+      align-items: center;
+      z-index: 15;
     }
     #ticker-text {
       display: inline-block;
       white-space: nowrap;
-      font-size: clamp(12px, 1.8vw, 22px);
+      font-size: clamp(12px, 1.5vw, 20px);
       color: var(--primary);
       padding: 0 40px;
-      animation: ticker-rtl 30s linear infinite;
+      animation: ticker-scroll-rtl 30s linear infinite;
     }
-    #ticker-text.ltr { animation-name: ticker-ltr; direction: ltr; }
-    #ticker-text.paused { animation-play-state: paused; }
-
-    @keyframes ticker-rtl {
+    #ticker-text.ltr {
+      animation-name: ticker-scroll-ltr;
+      direction: ltr;
+    }
+    #ticker-text.paused {
+      animation-play-state: paused;
+    }
+    /* RTL: enter from left, scroll right */
+    @keyframes ticker-scroll-rtl {
       from { transform: translateX(-100%); }
       to   { transform: translateX(100%); }
     }
-    @keyframes ticker-ltr {
+    /* LTR: enter from right, scroll left */
+    @keyframes ticker-scroll-ltr {
       from { transform: translateX(100%); }
       to   { transform: translateX(-100%); }
     }
 
-    /* ── Adhan glow overlay ───────────────────────────── */
+    /* ── Adhan glow overlay ──────────────────────────── */
     #adhan-overlay {
       display: none;
       position: fixed; inset: 0; z-index: 20;
@@ -191,11 +309,34 @@
     @keyframes pulse-glow {
       0%,100% { opacity: .6; } 50% { opacity: 1; }
     }
-
-    /* Adhan / iqama active states */
     body.adhan-active  #adhan-overlay { display: block; }
     body.adhan-active  #phase-badge   { background: rgba(232,200,109,.35); }
     body.iqama-active  #adhan-overlay { display: block; }
+
+    /* ── Debug mode ──────────────────────────────────── */
+    #debug-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 1000;
+      pointer-events: none;
+    }
+    body.debug-mode #debug-overlay  { display: block; }
+    body.debug-mode #header         { outline: 2px solid rgba(255,80,80,0.8); }
+    body.debug-mode #next-card      { outline: 2px solid rgba(80,255,80,0.8); }
+    body.debug-mode #prayer-table-wrap { outline: 2px solid rgba(80,160,255,0.8); }
+    body.debug-mode #ticker-wrap    { outline: 2px solid rgba(255,255,80,0.8); }
+    #debug-info {
+      position: absolute;
+      top: 8px;
+      inset-inline-start: 8px;
+      background: rgba(0,0,0,0.85);
+      border: 1px solid #0f0;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 12px;
+      color: #0f0;
+      line-height: 1.7;
+    }
   </style>
 </head>
 <body>
@@ -206,17 +347,23 @@
   <div id="bg-image"></div>
   <div id="adhan-overlay"></div>
 
-  <!-- Main layout -->
+  <!-- Debug overlay (visible only when ?debug=1) -->
+  <div id="debug-overlay">
+    <div id="debug-info">…</div>
+  </div>
+
+  <!-- 4-zone grid layout -->
   <div id="app">
-    <!-- Header -->
-    <header id="header">
+
+    <!-- Zone 1: TopBar -->
+    <header id="header" class="glass">
       <div id="city-name">—</div>
       <div id="clock">00:00:00</div>
       <div id="date-line">—</div>
     </header>
 
-    <!-- Next prayer -->
-    <section id="next-card">
+    <!-- Zone 2: MainPanel – next prayer + countdown -->
+    <section id="next-card" class="glass">
       <span id="phase-badge">loading…</span>
       <div id="next-label">الصلاة القادمة</div>
       <div id="next-prayer-name">—</div>
@@ -224,27 +371,60 @@
       <div id="temp-badge"></div>
     </section>
 
-    <!-- Prayer table -->
-    <table id="prayer-table">
-      <thead>
-        <tr>
-          <th>الصلاة</th>
-          <th>الأذان</th>
-          <th>الإقامة</th>
-        </tr>
-      </thead>
-      <tbody id="prayer-rows"></tbody>
-    </table>
+    <!-- Zone 3: PrayerTable -->
+    <div id="prayer-table-wrap" class="glass">
+      <table id="prayer-table">
+        <thead>
+          <tr>
+            <th>الصلاة</th>
+            <th>الأذان</th>
+            <th>الإقامة</th>
+          </tr>
+        </thead>
+        <tbody id="prayer-rows"></tbody>
+      </table>
+    </div>
 
-    <!-- Ticker -->
+    <!-- Zone 4: TickerBar (always rendered) -->
     <div id="ticker-wrap">
       <span id="ticker-text">بسم الله الرحمن الرحيم</span>
     </div>
-  </div>
+
+  </div><!-- #app -->
 
   <script src="/assets/focusRing.js"></script>
   <script>
   "use strict";
+
+  // ── Debug mode ─────────────────────────────────────────────────────────────
+  const IS_DEBUG = new URLSearchParams(window.location.search).get("debug") === "1";
+  if (IS_DEBUG) document.body.classList.add("debug-mode");
+
+  function updateDebugInfo(payload) {
+    if (!IS_DEBUG) return;
+    const header   = document.getElementById("header");
+    const nextCard = document.getElementById("next-card");
+    const tableWrap = document.getElementById("prayer-table-wrap");
+    const ticker   = document.getElementById("ticker-wrap");
+    const aspectRatio = window.innerWidth / window.innerHeight;
+    const profile = aspectRatio >= 1.6   ? "Wide (≥16:10)"
+                  : aspectRatio >= 1.333 ? "Standard (4:3–16:10)"
+                                         : "Portrait/Small (<4:3)";
+    const tickerData = payload ? (payload.ticker || {}) : {};
+    const phase = payload ? (payload.phase || "normal") : "—";
+    const paused = (tickerData.pauseDuringAdhan || (payload && payload.tickerPaused)) &&
+                   (phase === "adhan_active" || phase === "iqama_countdown");
+    document.getElementById("debug-info").innerHTML = [
+      `Profile: ${profile} (${window.innerWidth}×${window.innerHeight}, AR ${aspectRatio.toFixed(2)})`,
+      `TopBar:  ${header.offsetHeight}px`,
+      `Main:    ${nextCard.offsetHeight}px`,
+      `Table:   ${tableWrap.offsetHeight}px`,
+      `Ticker:  ${ticker.offsetHeight}px`,
+      `Phase:   ${phase}`,
+      `Ticker paused: ${paused ? "YES" : "no"}`,
+      `Msg: ${tickerData.customMessage || "(default)"}`,
+    ].join("<br>");
+  }
 
   // ── Clock ──────────────────────────────────────────────────────────────────
   function tickClock() {
@@ -258,24 +438,24 @@
   tickClock();
 
   // ── Countdown ─────────────────────────────────────────────────────────────
-  let _countdownBase = null;   // seconds remaining at last fetch
+  let _countdownBase   = null;  // seconds remaining at last fetch
   let _countdownFetchAt = null; // performance.now() at last fetch
 
   function renderCountdown() {
     if (_countdownBase === null) return;
-    const elapsed = (performance.now() - _countdownFetchAt) / 1000;
+    const elapsed   = (performance.now() - _countdownFetchAt) / 1000;
     const remaining = Math.max(0, _countdownBase - elapsed);
     const h = Math.floor(remaining / 3600);
     const m = Math.floor((remaining % 3600) / 60);
     const s = Math.floor(remaining % 60);
-    let text = h > 0
+    const formattedTime = h > 0
       ? `${h}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`
       : `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
-    document.getElementById("countdown").textContent = text;
+    document.getElementById("countdown").textContent = formattedTime;
   }
   setInterval(renderCountdown, 500);
 
-  // ── Phase badge map ────────────────────────────────────────────────────────
+  // ── Phase label map ────────────────────────────────────────────────────────
   const PHASE_LABEL = {
     normal:              "وقت عادي",
     adhan_active:        "وقت الأذان",
@@ -283,44 +463,41 @@
     prayer_in_progress:  "الصلاة جارية",
   };
 
-  // ── Gregorian date ─────────────────────────────────────────────────────────
-  function formatDate() {
-    return new Date().toLocaleDateString("ar-EG", {
-      weekday: "long", year: "numeric", month: "long", day: "numeric"
-    });
-  }
+  // ── Date line ─────────────────────────────────────────────────────────────
   function updateDate() {
-    document.getElementById("date-line").textContent = formatDate();
+    document.getElementById("date-line").textContent =
+      new Date().toLocaleDateString("ar-EG", {
+        weekday: "long", year: "numeric", month: "long", day: "numeric"
+      });
   }
   setInterval(updateDate, 60000);
   updateDate();
 
-  // ── Apply theme palette from API ────────────────────────────────────────────
+  // ── Apply theme from API ───────────────────────────────────────────────────
   function applyTheme(theme) {
     if (!theme) return;
     const palette = theme.palette || {};
     const layers  = theme.layerStack || {};
     const root    = document.documentElement;
-    if (palette.background)   root.style.setProperty("--bg",      palette.background);
-    if (palette.surface)      root.style.setProperty("--surface",  palette.surface);
-    if (palette.primary)      root.style.setProperty("--primary",  palette.primary);
-    if (palette.accent)       root.style.setProperty("--accent",   palette.accent);
-    if (palette.textPrimary)  root.style.setProperty("--text",     palette.textPrimary);
-    if (palette.textSecondary)root.style.setProperty("--text-dim", palette.textSecondary);
-    if (palette.adhanGlow)    root.style.setProperty("--adhan-glow", palette.adhanGlow);
 
-    // gradient
+    if (palette.background)    root.style.setProperty("--bg",          palette.background);
+    if (palette.primary)       root.style.setProperty("--primary",     palette.primary);
+    if (palette.accent)        root.style.setProperty("--accent",      palette.accent);
+    if (palette.textPrimary)   root.style.setProperty("--text",        palette.textPrimary);
+    if (palette.textSecondary) root.style.setProperty("--text-dim",    palette.textSecondary);
+    if (palette.adhanGlow)     root.style.setProperty("--adhan-glow",  palette.adhanGlow);
+
+    // Gradient background
     if (layers.gradientStops && layers.gradientStops.length) {
       const stops = layers.gradientStops
         .map(s => `${s.color} ${Math.round(s.location * 100)}%`)
         .join(", ");
-      const angle = layers.gradientAngle || 160;
       document.getElementById("bg-gradient").style.background =
-        `linear-gradient(${angle}deg, ${stops})`;
+        `linear-gradient(${layers.gradientAngle || 160}deg, ${stops})`;
     }
 
-    // optional background image
-    const imgEl = document.getElementById("bg-image");
+    // Optional image/video background
+    const imgEl  = document.getElementById("bg-image");
     const imgUrl = layers.backgroundImageUrl;
     if (imgUrl) {
       imgEl.style.backgroundImage = `url("${imgUrl}")`;
@@ -328,6 +505,15 @@
     } else {
       imgEl.style.opacity = "0";
     }
+
+    // Pattern opacity
+    if (layers.patternOpacity !== undefined) {
+      document.getElementById("bg-pattern").style.opacity = layers.patternOpacity;
+    }
+
+    // Vignette toggle
+    document.getElementById("bg-vignette").style.opacity =
+      (layers.vignette === false) ? "0" : "1";
   }
 
   // ── Render prayer rows ─────────────────────────────────────────────────────
@@ -350,6 +536,9 @@
     updateFocusRing(nextKey);
   }
 
+  // ── Last payload (used by debug overlay) ──────────────────────────────────
+  let _lastPayload = null;
+
   // ── Fetch /v1/display and render ───────────────────────────────────────────
   async function fetchAndRender() {
     try {
@@ -359,6 +548,7 @@
       });
       if (!resp.ok) return;
       const d = await resp.json();
+      _lastPayload = d;
 
       // City
       document.getElementById("city-name").textContent = d.city || "";
@@ -368,52 +558,63 @@
       document.getElementById("phase-badge").textContent =
         PHASE_LABEL[phase] || phase;
 
-      // Body class for glow
-      document.body.className = "";
-      if (phase === "adhan_active")       document.body.classList.add("adhan-active");
-      if (phase === "iqama_countdown")    document.body.classList.add("iqama-active");
+      // Body classes (preserve debug-mode if set)
+      document.body.className = IS_DEBUG ? "debug-mode" : "";
+      if (phase === "adhan_active")    document.body.classList.add("adhan-active");
+      if (phase === "iqama_countdown") document.body.classList.add("iqama-active");
 
-      // Next prayer
+      // Next prayer name
       document.getElementById("next-prayer-name").textContent =
         d.nextPrayerAr || d.nextPrayerKey || "—";
 
       // Countdown baseline
-      if (d.countdownSeconds !== null && d.countdownSeconds !== undefined) {
-        _countdownBase   = d.countdownSeconds;
+      if (d.countdownSeconds != null) {
+        _countdownBase    = d.countdownSeconds;
         _countdownFetchAt = performance.now();
       }
 
-      // Prayers table
+      // Prayer table
       if (d.prayers && d.prayers.length) {
         renderPrayers(d.prayers, d.nextPrayerKey);
       }
 
-      // Ticker
-      const tickerEl = document.getElementById("ticker-text");
+      // Ticker – always rendered; pause freezes animation but keeps bar visible
+      const tickerEl   = document.getElementById("ticker-text");
       const tickerData = d.ticker || {};
       const msg = tickerData.customMessage || "";
       if (msg) tickerEl.textContent = msg;
-      tickerEl.className = (d.tickerDirection === "ltr") ? "ltr" : "";
-      if (d.tickerPaused && (phase === "adhan_active" || phase === "iqama_countdown")) {
-        tickerEl.classList.add("paused");
-      }
+
+      const isLtr = (tickerData.direction === "ltr") || (d.tickerDirection === "ltr");
+      tickerEl.className = isLtr ? "ltr" : "";
+
+      const shouldPause = (tickerData.pauseDuringAdhan || d.tickerPaused) &&
+                          (phase === "adhan_active" || phase === "iqama_countdown");
+      if (shouldPause) tickerEl.classList.add("paused");
 
       // Temperature
       const tempEl = document.getElementById("temp-badge");
-      tempEl.textContent = (d.tempC !== null && d.tempC !== undefined)
-        ? `${d.tempC}°C` : "";
+      tempEl.textContent = (d.tempC != null) ? `${d.tempC}°C` : "";
 
       // Theme
       applyTheme(d.theme);
+
+      // Debug
+      updateDebugInfo(d);
 
     } catch (e) {
       console.warn("fetchAndRender error:", e);
     }
   }
 
-  // Poll every 1.5 seconds
+  // Poll every 1.5 s with no-store
   fetchAndRender();
   setInterval(fetchAndRender, 1500);
+
+  // Debug: refresh overlay on window resize
+  if (IS_DEBUG) {
+    window.addEventListener("resize", () => updateDebugInfo(_lastPayload));
+    updateDebugInfo(null);
+  }
   </script>
 </body>
 </html>
