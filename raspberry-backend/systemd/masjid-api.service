@@ -1,0 +1,19 @@
+[Unit]
+Description=Masjid Display API Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=admin
+WorkingDirectory=/home/admin/masjid-display-control/raspberry-backend
+EnvironmentFile=-/etc/masjid/masjid.env
+ExecStart=/home/admin/masjid-display-control/venv/bin/python3 -m uvicorn masjid_server:app --host 0.0.0.0 --port 8787
+Restart=on-failure
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=masjid-api
+
+[Install]
+WantedBy=multi-user.target
